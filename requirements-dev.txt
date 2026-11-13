@@ -1,2 +1,2 @@
 -r examples/calculator-api/requirements-dev.txt
-PyYAML==6.0.2
+PyYAML==6.0.3
