@@ -1,0 +1,181 @@
+name: FastAPI AI DevSecOps pipeline
+run-name: FastAPI CI · ${{ gitea.event_name }} · AI repair ${{ inputs.repair_attempt || '0' }}
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Existing open pull request number"
+        required: true
+      context_version:
+        description: "Immutable development-contract package version (usually run_id)"
+        required: true
+      repair_attempt:
+        description: "Repair attempt that produced the current PR head; use 0 before the first repair"
+        required: true
+        default: "0"
+      run_id:
+        description: "Original SIM run identifier"
+        required: true
+
+jobs:
+  test-build-scan:
+    runs-on: talos-host
+    timeout-minutes: 90
+    env:
+      CI_GITEA_URL: ${{ vars.AI_GITEA_URL }}
+      CI_GITEA_USER: ${{ vars.AI_GITEA_USER }}
+      CI_GITEA_TOKEN: ${{ secrets.AI_GITEA_TOKEN }}
+      CI_ARTIFACT_OWNER: ${{ vars.AI_ARTIFACT_OWNER }}
+      CI_ARTIFACT_PACKAGE: ${{ vars.AI_ARTIFACT_PACKAGE }}
+      CI_CONTEXT_OWNER: ${{ vars.AI_CONTEXT_OWNER }}
+      CI_CONTEXT_PACKAGE: ${{ vars.AI_CONTEXT_PACKAGE }}
+      PYTHON_BASE_IMAGE: ${{ vars.PYTHON_BASE_IMAGE }}
+      SEMGREP_IMAGE: ${{ vars.SEMGREP_IMAGE }}
+      ZAP_IMAGE: ${{ vars.ZAP_IMAGE }}
+      CURL_IMAGE: ${{ vars.CURL_IMAGE }}
+      AI_REVISE_ENABLED: ${{ vars.AI_REVISE_ENABLED }}
+      AI_REVISE_DRY_RUN: ${{ vars.AI_REVISE_DRY_RUN }}
+      AI_REVISE_CALLBACK_REQUIRED: ${{ vars.AI_REVISE_CALLBACK_REQUIRED }}
+      AI_MAX_REPAIR_ATTEMPTS: ${{ vars.AI_MAX_REPAIR_ATTEMPTS }}
+      SIM_INTERNAL_URL: ${{ vars.SIM_INTERNAL_URL }}
+      SIM_WORKFLOW04_ID: ${{ vars.SIM_WORKFLOW04_ID }}
+      SIM_WORKFLOW_API_KEY: ${{ secrets.SIM_WORKFLOW_API_KEY }}
+
+    steps:
+      - name: Prepare runner tools
+        run: apk add --no-cache bash git curl jq coreutils
+
+      - name: Resolve exact PR context, checkout and run pipeline
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          : "${CI_GITEA_URL:?Repository variable CI_GITEA_URL is required}"
+          : "${CI_GITEA_USER:?Repository variable CI_GITEA_USER is required}"
+          : "${CI_GITEA_TOKEN:?Repository secret CI_GITEA_TOKEN is required}"
+          : "${GITHUB_EVENT_PATH:?GITHUB_EVENT_PATH is required}"
+          : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
+
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          EVENT_NAME="${GITHUB_EVENT_NAME:-$(jq -r '.action // empty' "$GITHUB_EVENT_PATH")}"
+          PR_NUMBER=""
+          TARGET_SHA=""
+          TARGET_BRANCH=""
+          CONTEXT_VERSION=""
+          REPAIR_ATTEMPT="0"
+          RUN_ID=""
+
+          if [ "${GITHUB_EVENT_NAME:-}" = "pull_request" ] || jq -e '.pull_request != null' "$GITHUB_EVENT_PATH" >/dev/null 2>&1; then
+            PR_NUMBER="$(jq -r '.pull_request.number // .number // empty' "$GITHUB_EVENT_PATH")"
+            TARGET_SHA="$(jq -r '.pull_request.head.sha // empty' "$GITHUB_EVENT_PATH")"
+            TARGET_BRANCH="$(jq -r '.pull_request.head.ref // empty' "$GITHUB_EVENT_PATH")"
+
+            case "$TARGET_BRANCH" in
+              ai/run-*)
+                CONTEXT_VERSION="${TARGET_BRANCH#ai/}"
+                RUN_ID="$CONTEXT_VERSION"
+                ;;
+              *)
+                echo "Initial PR branch must match ai/run-*: ${TARGET_BRANCH}" >&2
+                exit 2
+                ;;
+            esac
+          elif [ "${GITHUB_EVENT_NAME:-}" = "workflow_dispatch" ] || jq -e '.inputs != null or .workflow_dispatch.inputs != null' "$GITHUB_EVENT_PATH" >/dev/null 2>&1; then
+            PR_NUMBER="$(jq -r '.inputs.pr_number // .workflow_dispatch.inputs.pr_number // empty' "$GITHUB_EVENT_PATH")"
+            CONTEXT_VERSION="$(jq -r '.inputs.context_version // .workflow_dispatch.inputs.context_version // empty' "$GITHUB_EVENT_PATH")"
+            REPAIR_ATTEMPT="$(jq -r '.inputs.repair_attempt // .workflow_dispatch.inputs.repair_attempt // empty' "$GITHUB_EVENT_PATH")"
+            RUN_ID="$(jq -r '.inputs.run_id // .workflow_dispatch.inputs.run_id // empty' "$GITHUB_EVENT_PATH")"
+
+            if ! printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'; then
+              echo "workflow_dispatch.pr_number must be a positive integer" >&2
+              exit 2
+            fi
+            if ! printf '%s' "$CONTEXT_VERSION" | grep -Eq '^[A-Za-z0-9_.-]{1,100}$'; then
+              echo "workflow_dispatch.context_version has an invalid format" >&2
+              exit 2
+            fi
+            if ! printf '%s' "$REPAIR_ATTEMPT" | grep -Eq '^(0|[1-5])$'; then
+              echo "workflow_dispatch.repair_attempt must be an integer from 0 to 5" >&2
+              exit 2
+            fi
+            if ! printf '%s' "$RUN_ID" | grep -Eq '^run-[0-9]{8}-[0-9]{6}-[a-z0-9]{6}$'; then
+              echo "workflow_dispatch.run_id has an invalid format" >&2
+              exit 2
+            fi
+
+            PR_FILE="${TMPDIR:-/tmp}/pull-request-${PR_NUMBER}-${GITHUB_RUN_NUMBER}.json"
+            curl --fail-with-body --silent --show-error \
+              --user "${CI_GITEA_USER}:${CI_GITEA_TOKEN}" \
+              --output "$PR_FILE" \
+              "${CI_GITEA_URL%/}/api/v1/repos/${OWNER}/${REPO}/pulls/${PR_NUMBER}"
+
+            jq -e \
+              --argjson number "$PR_NUMBER" \
+              '.number == $number and .state == "open" and .base.ref == "main" and
+               (.head.sha | test("^[0-9a-fA-F]{40,64}$")) and
+               (.head.ref | type == "string" and length > 0)' \
+              "$PR_FILE" >/dev/null
+
+            TARGET_SHA="$(jq -r '.head.sha' "$PR_FILE")"
+            TARGET_BRANCH="$(jq -r '.head.ref' "$PR_FILE")"
+          else
+            echo "Unsupported Gitea Actions event: ${GITHUB_EVENT_NAME:-unknown} (${EVENT_NAME:-no action})" >&2
+            exit 2
+          fi
+
+          if ! printf '%s' "$PR_NUMBER" | grep -Eq '^[1-9][0-9]*$'; then
+            echo "Resolved PR number is invalid" >&2
+            exit 2
+          fi
+          if ! printf '%s' "$TARGET_SHA" | grep -Eq '^[0-9a-fA-F]{40,64}$'; then
+            echo "Resolved PR head SHA is invalid" >&2
+            exit 2
+          fi
+          if [ -z "$TARGET_BRANCH" ]; then
+            echo "Resolved PR head branch is empty" >&2
+            exit 2
+          fi
+
+          echo "AI repair context: input=${REPAIR_ATTEMPT}; event=${GITHUB_EVENT_NAME:-unknown}; PR=${PR_NUMBER}; branch=${TARGET_BRANCH}"
+          echo "Gitea run-attempt and AI repair-attempt are different counters; a new workflow_dispatch run normally has Gitea attempt 1."
+
+          WORKDIR=/workspace/repository
+          test "$WORKDIR" = /workspace/repository
+          rm -rf -- "$WORKDIR"
+          mkdir -p /workspace
+
+          BASIC_AUTH="$(printf '%s:%s' "$CI_GITEA_USER" "$CI_GITEA_TOKEN" | base64 | tr -d '\n')"
+          REPO_URL="${CI_GITEA_URL%/}/${GITHUB_REPOSITORY}.git"
+          git -c http.extraHeader="Authorization: Basic ${BASIC_AUTH}" clone "$REPO_URL" "$WORKDIR"
+
+          cd "$WORKDIR"
+          git checkout --detach "$TARGET_SHA"
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+
+          export AI_COMMIT_SHA="$TARGET_SHA"
+          export AI_BRANCH="$TARGET_BRANCH"
+          export AI_PR_NUMBER="$PR_NUMBER"
+          export AI_CONTEXT_VERSION="$CONTEXT_VERSION"
+          export AI_REPAIR_ATTEMPT="$REPAIR_ATTEMPT"
+          export AI_RUN_ID="$RUN_ID"
+          export AI_MAX_REPAIR_ATTEMPTS="${AI_MAX_REPAIR_ATTEMPTS:-5}"
+
+          set +e
+          bash ci/run-pipeline.sh
+          PIPELINE_EXIT=$?
+          set -e
+
+          CALLBACK_EXIT=0
+          bash ci/notify-workflow04.sh || CALLBACK_EXIT=$?
+
+          if [ "${AI_REVISE_CALLBACK_REQUIRED:-false}" = "true" ] && [ "$CALLBACK_EXIT" -ne 0 ]; then
+            echo "Workflow 04 callback is required and failed" >&2
+            exit "$CALLBACK_EXIT"
+          fi
+
+          exit "$PIPELINE_EXIT"

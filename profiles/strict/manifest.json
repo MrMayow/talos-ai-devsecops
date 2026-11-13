@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "bundle_version": "5.0",
+  "bundle": "fastapi-production-v5",
+  "generated_at": "2026-11-13T16:01:28.220224Z",
+  "application_profile": "python-fastapi-3.12",
+  "repository_allowlist": [
+    "labadmin/demo-fastapi"
+  ],
+  "models": {
+    "requirements_and_review": "sim-qwen25-instruct:14b",
+    "architecture_and_code": "sim-qwen25-coder:14b",
+    "reasoning": "disabled",
+    "context_tokens": 30720
+  },
+  "generation_limits": {
+    "max_files": 15,
+    "max_file_chars": 20000,
+    "max_payload_chars": 55000
+  },
+  "ci_revision_context_limits": {
+    "max_files": 5,
+    "max_file_chars": 20000,
+    "max_total_chars": 30000
+  },
+  "implementation_repository_context_limits": {
+    "max_file_chars": 20000,
+    "max_total_chars": 30000
+  },
+  "max_requirements_repairs": 5,
+  "max_ci_repairs": 5,
+  "workflows": [
+    "workflows/01-requirements-fastapi-v5.json",
+    "workflows/02-architecture-fastapi-v5.json",
+    "workflows/03-implementation-fastapi-v5.json",
+    "workflows/04-ci-repair-fastapi-v5.json"
+  ],
+  "workflow_change_scope": {
+    "01": "substantial: structured requirements plus async checkpoint state machine",
+    "02": "substantial: fixed FastAPI profile and closed quality gate",
+    "03": "substantial: API-only generation and resumable branch/PR",
+    "04": "substantial: API-only repair with preserved dispatch context"
+  },
+  "required_sim_environment": [
+    "GITEA_URL",
+    "GITEA_TOKEN",
+    "SIM_INTERNAL_URL",
+    "SIM_WORKFLOW01_ID",
+    "SIM_WORKFLOW02_ID",
+    "SIM_WORKFLOW03_ID",
+    "SIM_WORKFLOW_API_KEY"
+  ],
+  "required_gitea_actions_variables": [
+    "AI_GITEA_URL",
+    "AI_GITEA_USER",
+    "AI_ARTIFACT_OWNER",
+    "AI_ARTIFACT_PACKAGE",
+    "AI_CONTEXT_OWNER",
+    "AI_CONTEXT_PACKAGE",
+    "AI_REVISE_ENABLED",
+    "AI_REVISE_DRY_RUN",
+    "AI_REVISE_CALLBACK_REQUIRED",
+    "AI_MAX_REPAIR_ATTEMPTS",
+    "SIM_INTERNAL_URL",
+    "SIM_WORKFLOW04_ID"
+  ],
+  "required_gitea_actions_secrets": [
+    "AI_GITEA_TOKEN",
+    "SIM_WORKFLOW_API_KEY"
+  ],
+  "security": {
+    "literal_secrets_in_exports": false,
+    "non_idempotent_api_retries": 0,
+    "manual_merge_required": true
+  }
+}

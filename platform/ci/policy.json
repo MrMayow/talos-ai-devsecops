@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "implementation_profile": "python-fastapi-3.12",
+  "unit_tests": {
+    "required": true
+  },
+  "static_analysis": {
+    "semgrep": {
+      "required": true,
+      "block_on_any_finding": true
+    }
+  },
+  "runtime_smoke": {
+    "required": true,
+    "health_path": "/health"
+  },
+  "dynamic_analysis": {
+    "zap_baseline": {
+      "required": true,
+      "warnings_block": false,
+      "warning_exit_codes": [2],
+      "blocking_exit_codes": [1, 3]
+    }
+  },
+  "fuzzing": {
+    "enabled": false
+  },
+  "artifacts_upload": {
+    "required": true,
+    "package_name": "ci-artifacts"
+  }
+}

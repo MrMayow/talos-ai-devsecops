@@ -1,0 +1,3733 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-08-05T20:07:47.735675Z",
+  "state": {
+    "blocks": {
+      "b40f1a3f-330f-4e92-94e7-ba9f7e844bfe": {
+        "id": "b40f1a3f-330f-4e92-94e7-ba9f7e844bfe",
+        "type": "start_trigger",
+        "name": "Start",
+        "position": {
+          "x": 80,
+          "y": 80
+        },
+        "subBlocks": {
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "55123e1f-3f38-4c19-8534-58e66479a027",
+                "name": "artifact_owner",
+                "type": "string",
+                "value": "labadmin",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "fc079a5a-71fd-4254-b131-dd3a524cc25e",
+                "name": "artifact_package",
+                "type": "string",
+                "value": "ai-demo-artifacts",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "cb723aac-de84-4bf0-b7f2-5eb4fd602eb0",
+                "name": "artifact_version",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": "run_id из Workflow 01"
+              },
+              {
+                "id": "bf1c1e5b-22d4-4ad5-89d6-041e16c8a4ed",
+                "name": "architecture_file",
+                "type": "string",
+                "value": "architecture.json",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "87c104cb-e692-422b-8f29-055979c49abc",
+                "name": "dry_run",
+                "type": "boolean",
+                "value": false,
+                "collapsed": true,
+                "description": "true — не писать в Gitea"
+              }
+            ]
+          }
+        },
+        "outputs": {
+          "files": {
+            "type": "file[]",
+            "description": "User uploaded files"
+          },
+          "input": {
+            "type": "string",
+            "description": "Primary user input or message"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation thread identifier"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "59853efa-f20e-47e2-8c44-8fe8137094c1": {
+        "id": "59853efa-f20e-47e2-8c44-8fe8137094c1",
+        "type": "api",
+        "name": "Get Architecture Artifact",
+        "position": {
+          "x": 510,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<start.artifact_owner>/generic/<start.artifact_package>/<start.artifact_version>/<start.architecture_file>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "eed975be-338f-4682-b539-1ff976056da4",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "f197b98b-e016-408b-8d61-d228e352ebca",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "5fa47f26-bad9-4db2-9639-3f7ecb7a411d": {
+        "id": "5fa47f26-bad9-4db2-9639-3f7ecb7a411d",
+        "type": "function",
+        "name": "Validate Implementation Input",
+        "position": {
+          "x": 940,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const errors=[];let artifact=<getarchitectureartifact.data>;\nif(Number(<getarchitectureartifact.status>)!==200)errors.push('Architecture artifact не получен');\nfor(let i=0;i<2&&typeof artifact==='string';i++){try{artifact=JSON.parse(artifact);}catch(_){errors.push('Architecture artifact не JSON');artifact=null;break;}}\nif(artifact?.data&&typeof artifact.data==='object')artifact=artifact.data;\nif(!artifact||typeof artifact!=='object')errors.push('Architecture artifact отсутствует');\nif(artifact&&artifact.workflow_id!=='02-architecture-demo')errors.push('Неверный источник architecture');\nif(artifact&&artifact.status!=='approved')errors.push('Architecture не approved');\nif(!Array.isArray(artifact?.repository_plan?.files))errors.push('Нет repository plan');\nconst runId=String(artifact?.run_id??'');if(!/^run-\\d{8}-\\d{6}-[a-z0-9]{6}$/.test(runId))errors.push('Некорректный run_id');\nconst owner=String(artifact?.target?.owner??''),repo=String(artifact?.target?.repo??''),baseBranch=String(artifact?.target?.base_branch??'');\nif(!owner||!repo||!baseBranch)errors.push('Не задан target repository');\nconst branch=`ai/${runId}`;\nreturn {valid:errors.length===0,errors,artifact,run_id:runId,owner,repo,base_branch:baseBranch,branch,branch_encoded:encodeURIComponent(branch),dry_run:Boolean(<start.dry_run>),artifact_ref:{owner:String(<start.artifact_owner>),package:String(<start.artifact_package>),version:String(<start.artifact_version>),file:String(<start.architecture_file>)}};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "d70ce4c8-99ca-45c7-89c8-bf772c5d5415": {
+        "id": "d70ce4c8-99ca-45c7-89c8-bf772c5d5415",
+        "type": "condition",
+        "name": "Input Valid",
+        "position": {
+          "x": 1370,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"d70ce4c8-99ca-45c7-89c8-bf772c5d5415-if\",\"title\":\"if\",\"value\":\"<validateimplementationinput.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":51,\"activeSourceBlockId\":null},{\"id\":\"d70ce4c8-99ca-45c7-89c8-bf772c5d5415-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f2355c21-7cf5-4de2-8dfe-11516a36d783": {
+        "id": "f2355c21-7cf5-4de2-8dfe-11516a36d783",
+        "type": "response",
+        "name": "Invalid Implementation",
+        "position": {
+          "x": 1800,
+          "y": 80
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validateimplementationinput.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "4ffe5f10-b8d1-4b8b-80cf-41b50c78fc8d",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "d9579f55-074e-4a0b-af29-e30c8575cd09": {
+        "id": "d9579f55-074e-4a0b-af29-e30c8575cd09",
+        "type": "api",
+        "name": "Get Base Branch",
+        "position": {
+          "x": 2230,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/branches/<validateimplementationinput.result.base_branch>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "02af088b-4013-4d99-9182-b82ffa24bd0a",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "f52135d7-b678-46f3-991a-412557d13859",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "6e43f34d-6cc6-48a1-a3cc-27de50068f87": {
+        "id": "6e43f34d-6cc6-48a1-a3cc-27de50068f87",
+        "type": "api",
+        "name": "List Branches",
+        "position": {
+          "x": 2660,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/branches"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "c4361d42-f016-4db7-a59c-5a956b259089",
+                "cells": {
+                  "Key": "page",
+                  "Value": "1"
+                }
+              },
+              {
+                "id": "26f96f8d-fc8d-43d9-889b-eac1d33ccda3",
+                "cells": {
+                  "Key": "limit",
+                  "Value": "100"
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "accd5d00-8731-4fdf-8f50-4ff403156553",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "3d97d6ab-ce6b-4aff-8834-d8000c4bec19",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "300cfcbb-8d9c-4940-a419-cfb0d63d0d48": {
+        "id": "300cfcbb-8d9c-4940-a419-cfb0d63d0d48",
+        "type": "function",
+        "name": "Resolve Branch",
+        "position": {
+          "x": 3090,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const errors=[];const base=<getbasebranch.data>;const branches=<listbranches.data>;const target=String(<validateimplementationinput.result.branch>??'');\nif(Number(<getbasebranch.status>)!==200||!base?.commit?.id)errors.push('Base branch не получена');\nif(Number(<listbranches.status>)!==200||!Array.isArray(branches))errors.push('Список веток не получен');\nconst existing=Array.isArray(branches)?branches.find(x=>String(x?.name??'')===target):null;\nreturn {valid:errors.length===0,errors,exists:Boolean(existing),branch:target,base_sha:String(base?.commit?.id??''),existing_sha:String(existing?.commit?.id??'')};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "3e775f68-0a65-480e-bcc4-ce5c16ebd17c": {
+        "id": "3e775f68-0a65-480e-bcc4-ce5c16ebd17c",
+        "type": "condition",
+        "name": "Branch Context Valid",
+        "position": {
+          "x": 3520,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"3e775f68-0a65-480e-bcc4-ce5c16ebd17c-if\",\"title\":\"if\",\"value\":\"<resolvebranch.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":37,\"activeSourceBlockId\":null},{\"id\":\"3e775f68-0a65-480e-bcc4-ce5c16ebd17c-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "54a87b64-22d7-4e64-96cd-fc45bd3dd076": {
+        "id": "54a87b64-22d7-4e64-96cd-fc45bd3dd076",
+        "type": "response",
+        "name": "Branch Context Error",
+        "position": {
+          "x": 3950,
+          "y": 80
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<resolvebranch.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "424"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "b287d3a7-02a2-442a-9cbf-ba9be19d1da6",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "034a168c-414d-4aac-a7f5-3537218ceaec": {
+        "id": "034a168c-414d-4aac-a7f5-3537218ceaec",
+        "type": "condition",
+        "name": "Target Branch Exists",
+        "position": {
+          "x": 80,
+          "y": 500
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"034a168c-414d-4aac-a7f5-3537218ceaec-if\",\"title\":\"if\",\"value\":\"<resolvebranch.result.exists> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":38,\"activeSourceBlockId\":null},{\"id\":\"034a168c-414d-4aac-a7f5-3537218ceaec-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "b3889dfb-f491-4a3b-ab8f-6a6d911d55c9": {
+        "id": "b3889dfb-f491-4a3b-ab8f-6a6d911d55c9",
+        "type": "api",
+        "name": "Create Branch",
+        "position": {
+          "x": 510,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/branches"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\"new_branch_name\":\"<validateimplementationinput.result.branch>\",\"old_branch_name\":\"<validateimplementationinput.result.base_branch>\"}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "cdba76f0-f738-4869-826d-d3f60adc569a",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "2c8593fa-4e1f-479d-86c4-0ed127ff42b6",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "75ee0c3a-5a15-4e5c-8310-436e88bd7ce9",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "e8f969c9-31b4-49d9-990b-8043b7902cb2": {
+        "id": "e8f969c9-31b4-49d9-990b-8043b7902cb2",
+        "type": "function",
+        "name": "Check Branch Creation",
+        "position": {
+          "x": 940,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status=Number(<createbranch.status>);if(![200,201].includes(status))throw new Error(`Create branch failed: HTTP ${status}`);return {valid:true,status};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "5a33866d-46df-449a-b3fd-4e2208cacd36": {
+        "id": "5a33866d-46df-449a-b3fd-4e2208cacd36",
+        "type": "api",
+        "name": "Get Working Branch",
+        "position": {
+          "x": 1370,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/branches/<validateimplementationinput.result.branch_encoded>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "baae5092-b566-437b-b7a1-d23fee2a5fd1",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "9e75fc0e-61c4-46ed-9494-6d37c847f0b9",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 230,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f2787fc6-e0b8-4c15-9628-a220ad121345": {
+        "id": "f2787fc6-e0b8-4c15-9628-a220ad121345",
+        "type": "api",
+        "name": "Get Target Branch Tree",
+        "position": {
+          "x": 1800,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/git/trees/<getworkingbranch.data.commit.id>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "32f53b38-28df-4262-bd05-ead801196643",
+                "cells": {
+                  "Key": "recursive",
+                  "Value": "true"
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "ef9a3897-8292-4a80-bee9-add4305febce",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "62bd03fd-ce11-427a-9215-166085110d1b",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "05142e24-1487-4a16-b1c2-cb5f8254b6dd": {
+        "id": "05142e24-1487-4a16-b1c2-cb5f8254b6dd",
+        "type": "function",
+        "name": "Split Implementation Plan",
+        "position": {
+          "x": 2230,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const plan=Array.isArray(<validateimplementationinput.result.artifact.repository_plan.files>)?<validateimplementationinput.result.artifact.repository_plan.files>:[];\nconst requiredDocs=['docs/USER_GUIDE.md','docs/ADMIN_GUIDE.md','docs/TECHNICAL_GUIDE.md'];\nconst docSet=new Set(requiredDocs.map(x=>x.toLowerCase()));\nconst documentationFiles=plan.filter(x=>docSet.has(String(x?.path??'').trim().toLowerCase()));\nconst testFiles=plan.filter(x=>String(x?.path??'').trim().toLowerCase().startsWith('tests/'));\nconst applicationFiles=plan.filter(x=>{const path=String(x?.path??'').trim().toLowerCase();return !docSet.has(path)&&!path.startsWith('tests/');});\nconst present=new Set(documentationFiles.map(x=>String(x?.path??'').trim().toLowerCase()));\nconst missing=requiredDocs.filter(x=>!present.has(x.toLowerCase()));\nif(missing.length)throw new Error(`Architecture plan is missing documentation files: ${missing.join(', ')}`);\nif(testFiles.length<1)throw new Error('Architecture plan does not contain tests');\nreturn {application_files:applicationFiles,test_files:testFiles,documentation_files:documentationFiles,required_documentation_paths:requiredDocs};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "dcbb6b5a-f1e8-4fe7-9f65-db7fa0f5df5f": {
+        "id": "dcbb6b5a-f1e8-4fe7-9f65-db7fa0f5df5f",
+        "type": "agent",
+        "name": "Developer",
+        "position": {
+          "x": 2660,
+          "y": 500
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты разработчик демонстрационного FastAPI-проекта. Верни только JSON Response\nFormat с полным replacement content всех и только переданных application и\ndependency файлов. Проект должен запускаться как app.main:app на Python 3.12 и\nпредоставлять /health и /openapi.json. Тесты и документацию создают отдельные\nагенты. Не пиши .gitea/**, ci/**, .env и секреты. Не используй TODO, заглушки и\nMarkdown fences вокруг содержимого файлов. Не заявляй, что тесты выполнены."
+              },
+              {
+                "role": "user",
+                "content": "REQUIREMENTS: <validateimplementationinput.result.artifact.requirements>\nARCHITECTURE: <validateimplementationinput.result.artifact.architecture>\nTEST STRATEGY: <validateimplementationinput.result.artifact.test_strategy>\nAPPROVED APPLICATION FILES: <splitimplementationplan.result.application_files>\nCURRENT TREE: <gettargetbranchtree.data.tree>\n\nВерни каждый путь из APPROVED APPLICATION FILES ровно один раз и никаких\nдругих файлов. Перед ответом сравни список возвращаемых путей с approved list."
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "16384"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_generated_files\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 30000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "f7749083-58e1-4c3c-8957-84869f90dd08": {
+        "id": "f7749083-58e1-4c3c-8957-84869f90dd08",
+        "type": "agent",
+        "name": "Test Developer",
+        "position": {
+          "x": 3090,
+          "y": 500
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты разработчик автоматических тестов FastAPI-проекта. Верни только JSON Response\nFormat с полным replacement content всех и только переданных test files.\nСоздай запускаемые pytest-тесты по требованиям и test strategy, согласованные с\nпереданным application code. Не возвращай код приложения, зависимости или\nдокументацию. Не используй TODO, заглушки, внешнюю сеть, реальные секреты и\nMarkdown fences. Не заявляй, что тесты уже выполнены."
+              },
+              {
+                "role": "user",
+                "content": "REQUIREMENTS: <validateimplementationinput.result.artifact.requirements>\nTEST STRATEGY: <validateimplementationinput.result.artifact.test_strategy>\nAPPROVED TEST FILES: <splitimplementationplan.result.test_files>\nGENERATED APPLICATION FILES: <developer.files>\n\nВерни каждый путь из APPROVED TEST FILES ровно один раз и никаких других\nфайлов. Перед ответом сравни список возвращаемых путей с approved list."
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "12288"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_generated_files\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 30000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "747c7149-83df-4dc2-b7d9-bce0d77b623f": {
+        "id": "747c7149-83df-4dc2-b7d9-bce0d77b623f",
+        "type": "agent",
+        "name": "Documentation Writer",
+        "position": {
+          "x": 3520,
+          "y": 500
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты технический писатель FastAPI-проекта. Верни только JSON Response Format с\nполным replacement content всех и только переданных documentation files.\nДокументы пиши по-русски, а команды, пути, имена endpoint и идентификаторы\nоставляй в исходном виде. Документируй только поведение из требований,\nархитектуры и плана: не выдумывай адреса, секреты, инфраструктуру, выполненные\nтесты и возможности продукта. Если эксплуатационная функция неприменима,\nнапиши это явно и объясни причину.\n\nUSER_GUIDE должен описывать назначение продукта, подготовку, пользовательские\nсценарии, примеры запросов/ответов и ошибки. ADMIN_GUIDE должен описывать\nустановку, конфигурацию, запуск и остановку, health-check, логи, обновление и\nоткат, резервное копирование при наличии сохраняемых данных, безопасность и\nдиагностику. TECHNICAL_GUIDE должен объединять описание API и моделей данных,\nархитектуры и потоков, дерева проекта и ответственности файлов, технологий и\nзависимостей, а также стратегии, команд и сценариев тестирования. Каждый\nдокумент должен иметь содержательные Markdown-заголовки. Не используй TODO и\nзаглушки."
+              },
+              {
+                "role": "user",
+                "content": "REQUIREMENTS: <validateimplementationinput.result.artifact.requirements>\nDOCUMENTATION REQUIREMENTS: <validateimplementationinput.result.artifact.requirements.documentation_requirements>\nARCHITECTURE: <validateimplementationinput.result.artifact.architecture>\nTEST STRATEGY: <validateimplementationinput.result.artifact.test_strategy>\nAPPROVED DOCUMENTATION FILES: <splitimplementationplan.result.documentation_files>\n\nВерни полное, согласованное между файлами содержимое каждого документа."
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "16384"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_generated_files\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 30000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "33838b88-81bf-4209-82e2-186118bfec77": {
+        "id": "33838b88-81bf-4209-82e2-186118bfec77",
+        "type": "function",
+        "name": "Inspect Generated Files",
+        "position": {
+          "x": 3950,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const plan=Array.isArray(<validateimplementationinput.result.artifact.repository_plan.files>)?<validateimplementationinput.result.artifact.repository_plan.files>:[];const approved=new Set(plan.map(x=>String(x?.path??'').trim()));const applicationApproved=new Set(<splitimplementationplan.result.application_files>.map(x=>String(x?.path??'').trim()));const testsApproved=new Set(<splitimplementationplan.result.test_files>.map(x=>String(x?.path??'').trim()));const docsApproved=new Set(<splitimplementationplan.result.documentation_files>.map(x=>String(x?.path??'').trim()));const groups=[{name:'application',items:Array.isArray(<developer.files>)?<developer.files>:[],allowed:applicationApproved},{name:'tests',items:Array.isArray(<testdeveloper.files>)?<testdeveloper.files>:[],allowed:testsApproved},{name:'documentation',items:Array.isArray(<documentationwriter.files>)?<documentationwriter.files>:[],allowed:docsApproved}];const errors=[];const seen=new Set();const files=[];let total=0;const safe=/^(?!\\/)(?!.*\\.\\.)(?!.*\\\\)[A-Za-z0-9._/-]+$/;\nfor(const group of groups)for(const item of group.items){const path=String(item?.path??'').trim();const content=String(item?.content??'');const lower=path.toLowerCase();const emptyAllowed=lower==='__init__.py'||lower.endsWith('/__init__.py');if(!safe.test(path)||/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(path)||/^\\.env/i.test(path))errors.push(`Недопустимый path: ${path}`);if(!group.allowed.has(path))errors.push(`${group.name} generator returned a path outside its approved scope: ${path}`);if(!approved.has(path))errors.push(`Path отсутствует в architecture plan: ${path}`);if(seen.has(lower))errors.push(`Дубликат path: ${path}`);if(!content&&!emptyAllowed)errors.push(`Пустой файл: ${path}`);if(content.length>30000)errors.push(`Файл больше 30000 символов: ${path}`);if(group.name==='documentation'&&content.length<700)errors.push(`Документ слишком короткий: ${path}`);if(group.name==='documentation'&&(content.match(/^#{1,3}\\s+.+$/gm)||[]).length<3)errors.push(`В документе недостаточно разделов: ${path}`);if(/\\bTODO\\b|заполнить позднее|coming soon/i.test(content))errors.push(`Обнаружена заглушка: ${path}`);if(/-----BEGIN .*PRIVATE KEY-----|(?:password|token|api[_-]?key)\\s*[:=]\\s*['\\\"][^'\\\"]{8,}/i.test(content))errors.push(`Возможный секрет: ${path}`);seen.add(lower);total+=content.length;files.push({path,content,encoded_path:path.split('/').map(encodeURIComponent).join('/')});}\nfor(const path of approved)if(!seen.has(path.toLowerCase()))errors.push(`Не сгенерирован approved файл: ${path}`);\nif(total>140000)errors.push('Общий объём проекта превышает 140000 символов');\nreturn {valid:errors.length===0,errors,files,total_chars:total,summary:String(<developer.summary>??'')};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "def7ea8a-caa4-4fe3-a783-0c7357a4183c": {
+        "id": "def7ea8a-caa4-4fe3-a783-0c7357a4183c",
+        "type": "agent",
+        "name": "Generation Repair",
+        "position": {
+          "x": 80,
+          "y": 920
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты выполняешь один ограниченный repair-проход по уже сгенерированному FastAPI-\nпроекту. Верни только JSON Response Format. Если ERRORS пуст, верни пустой\nмассив files и ничего не изменяй. Если ошибки есть, верни только отсутствующие\nили исправленные файлы из APPROVED PLAN; полное содержимое файла заменит\nпервичный вариант. Не изменяй корректные файлы, не добавляй новые пути, не пиши\n.gitea/**, ci/**, .env и секреты. Пустой __init__.py допустим. Документы должны\nбыть на русском, содержать минимум три содержательных Markdown-раздела и\nсоответствовать требованиям. Код и pytest-тесты должны быть завершёнными, без\nTODO и заглушек. Не заявляй, что тесты уже выполнены."
+              },
+              {
+                "role": "user",
+                "content": "REQUIREMENTS: <validateimplementationinput.result.artifact.requirements>\nARCHITECTURE: <validateimplementationinput.result.artifact.architecture>\nTEST STRATEGY: <validateimplementationinput.result.artifact.test_strategy>\nAPPROVED PLAN: <validateimplementationinput.result.artifact.repository_plan.files>\nERRORS: <inspectgeneratedfiles.result.errors>\nCURRENT GENERATED FILES: <inspectgeneratedfiles.result.files>\n\nИсправь только перечисленные ошибки. Для отсутствующего approved файла создай\nего, для некорректного — верни исправленное полное содержимое."
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "12288"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_generated_files\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 30000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "f08a3426-5b08-4a0d-8ea5-85d4c5474f13": {
+        "id": "f08a3426-5b08-4a0d-8ea5-85d4c5474f13",
+        "type": "function",
+        "name": "Merge Generation Repair",
+        "position": {
+          "x": 510,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const plan=Array.isArray(<validateimplementationinput.result.artifact.repository_plan.files>)?<validateimplementationinput.result.artifact.repository_plan.files>:[];const approved=new Set(plan.map(x=>String(x?.path??'').trim()));const current=Array.isArray(<inspectgeneratedfiles.result.files>)?<inspectgeneratedfiles.result.files>:[];const attempted=<inspectgeneratedfiles.result.valid>!==true;const returned=attempted&&Array.isArray(<generationrepair.files>)?<generationrepair.files>:[];const errors=[];const merged=new Map();\nfor(const item of current){const path=String(item?.path??'').trim();if(approved.has(path))merged.set(path,{path,content:String(item?.content??'')});}\nconst repaired=new Set();for(const item of returned){const path=String(item?.path??'').trim();if(!approved.has(path)){errors.push(`Repair вернул неразрешённый path: ${path}`);continue;}if(repaired.has(path))errors.push(`Repair вернул дубликат: ${path}`);repaired.add(path);merged.set(path,{path,content:String(item?.content??'')});}\nreturn {files:[...merged.values()],repair_attempted:attempted,repaired_paths:[...repaired],merge_errors:errors,summary:String(<generationrepair.summary>??'')};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "3efdbff3-ed72-4f24-b148-0d19fdaac2bb": {
+        "id": "3efdbff3-ed72-4f24-b148-0d19fdaac2bb",
+        "type": "function",
+        "name": "Validate Generated Files",
+        "position": {
+          "x": 940,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const generated=Array.isArray(<mergegenerationrepair.result.files>)?<mergegenerationrepair.result.files>:[];const plan=Array.isArray(<validateimplementationinput.result.artifact.repository_plan.files>)?<validateimplementationinput.result.artifact.repository_plan.files>:[];const approved=new Set(plan.map(x=>String(x?.path??'').trim()));const docsApproved=new Set(<splitimplementationplan.result.documentation_files>.map(x=>String(x?.path??'').trim()));const errors=Array.isArray(<mergegenerationrepair.result.merge_errors>)?[...<mergegenerationrepair.result.merge_errors>]:[];const seen=new Set();const files=[];let total=0;const safe=/^(?!\\/)(?!.*\\.\\.)(?!.*\\\\)[A-Za-z0-9._/-]+$/;\nfor(const item of generated){const path=String(item?.path??'').trim();const content=String(item?.content??'');const lower=path.toLowerCase();const emptyAllowed=lower==='__init__.py'||lower.endsWith('/__init__.py');if(!safe.test(path)||/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(path)||/^\\.env/i.test(path))errors.push(`Недопустимый path: ${path}`);if(!approved.has(path))errors.push(`Path отсутствует в architecture plan: ${path}`);if(seen.has(lower))errors.push(`Дубликат path: ${path}`);if(!content&&!emptyAllowed)errors.push(`Пустой файл: ${path}`);if(content.length>30000)errors.push(`Файл больше 30000 символов: ${path}`);if(docsApproved.has(path)&&content.length<700)errors.push(`Документ слишком короткий: ${path}`);if(docsApproved.has(path)&&(content.match(/^#{1,3}\\s+.+$/gm)||[]).length<3)errors.push(`В документе недостаточно разделов: ${path}`);if(/\\bTODO\\b|заполнить позднее|coming soon/i.test(content))errors.push(`Обнаружена заглушка: ${path}`);if(/-----BEGIN .*PRIVATE KEY-----|(?:password|token|api[_-]?key)\\s*[:=]\\s*['\\\"][^'\\\"]{8,}/i.test(content))errors.push(`Возможный секрет: ${path}`);seen.add(lower);total+=content.length;files.push({path,content,encoded_path:path.split('/').map(encodeURIComponent).join('/')});}\nfor(const path of approved)if(!seen.has(path.toLowerCase()))errors.push(`Не сгенерирован approved файл: ${path}`);if(total>140000)errors.push('Общий объём проекта превышает 140000 символов');return {valid:errors.length===0,errors,files,total_chars:total,repair_attempted:<mergegenerationrepair.result.repair_attempted>,repaired_paths:<mergegenerationrepair.result.repaired_paths>,summary:String(<mergegenerationrepair.result.summary>??'')};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "640c6197-3afb-4c2f-b6e7-00554064a844": {
+        "id": "640c6197-3afb-4c2f-b6e7-00554064a844",
+        "type": "condition",
+        "name": "Files Valid",
+        "position": {
+          "x": 1370,
+          "y": 920
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"640c6197-3afb-4c2f-b6e7-00554064a844-if\",\"title\":\"if\",\"value\":\"<validategeneratedfiles.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":46,\"activeSourceBlockId\":null},{\"id\":\"640c6197-3afb-4c2f-b6e7-00554064a844-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "44d1b5b6-1fe8-498e-90e5-d3b4862947fe": {
+        "id": "44d1b5b6-1fe8-498e-90e5-d3b4862947fe",
+        "type": "response",
+        "name": "Invalid Generated Files",
+        "position": {
+          "x": 1800,
+          "y": 920
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validategeneratedfiles.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "bbaab746-1f8e-4a6f-b791-75b2c7884625",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "c1e95314-134a-4e74-a03a-51a789242a61": {
+        "id": "c1e95314-134a-4e74-a03a-51a789242a61",
+        "type": "condition",
+        "name": "Dry Run",
+        "position": {
+          "x": 2230,
+          "y": 920
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"c1e95314-134a-4e74-a03a-51a789242a61-if\",\"title\":\"if\",\"value\":\"<validateimplementationinput.result.dry_run> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":53,\"activeSourceBlockId\":null},{\"id\":\"c1e95314-134a-4e74-a03a-51a789242a61-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "9cdbde18-90a8-444f-8ac5-0ea6a9829e4f": {
+        "id": "9cdbde18-90a8-444f-8ac5-0ea6a9829e4f",
+        "type": "response",
+        "name": "Dry Run Result",
+        "position": {
+          "x": 2660,
+          "y": 920
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validategeneratedfiles.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "86088e83-c49f-46ad-b018-b3b88c60dcef",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "e431b32b-8064-4213-ac5b-04a909c6ba62": {
+        "id": "e431b32b-8064-4213-ac5b-04a909c6ba62",
+        "type": "function",
+        "name": "Prepare Writes",
+        "position": {
+          "x": 3090,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const files = <validategeneratedfiles.result.files>;\nif (Number(<gettargetbranchtree.status>) !== 200 || !Array.isArray(<gettargetbranchtree.data.tree>)) {\n  throw new Error('Не удалось прочитать актуальное дерево целевой ветки.');\n}\nconst targetTree = new Map(<gettargetbranchtree.data.tree>.map((entry) => [String(entry.path ?? ''), entry]));\n\nfunction utf8ToBase64(value) {\n  const text = String(value ?? '');\n  const bytes = [];\n\n  for (let i = 0; i < text.length; i++) {\n    let codePoint = text.charCodeAt(i);\n\n    if (codePoint >= 0xd800 && codePoint <= 0xdbff) {\n      const next = text.charCodeAt(i + 1);\n      if (next >= 0xdc00 && next <= 0xdfff) {\n        codePoint = 0x10000 + ((codePoint - 0xd800) << 10) + (next - 0xdc00);\n        i++;\n      } else {\n        codePoint = 0xfffd;\n      }\n    } else if (codePoint >= 0xdc00 && codePoint <= 0xdfff) {\n      codePoint = 0xfffd;\n    }\n\n    if (codePoint <= 0x7f) {\n      bytes.push(codePoint);\n    } else if (codePoint <= 0x7ff) {\n      bytes.push(0xc0 | (codePoint >> 6));\n      bytes.push(0x80 | (codePoint & 0x3f));\n    } else if (codePoint <= 0xffff) {\n      bytes.push(0xe0 | (codePoint >> 12));\n      bytes.push(0x80 | ((codePoint >> 6) & 0x3f));\n      bytes.push(0x80 | (codePoint & 0x3f));\n    } else {\n      bytes.push(0xf0 | (codePoint >> 18));\n      bytes.push(0x80 | ((codePoint >> 12) & 0x3f));\n      bytes.push(0x80 | ((codePoint >> 6) & 0x3f));\n      bytes.push(0x80 | (codePoint & 0x3f));\n    }\n  }\n\n  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';\n  let result = '';\n  for (let i = 0; i < bytes.length; i += 3) {\n    const a = bytes[i];\n    const hasB = i + 1 < bytes.length;\n    const hasC = i + 2 < bytes.length;\n    const b = hasB ? bytes[i + 1] : 0;\n    const c = hasC ? bytes[i + 2] : 0;\n\n    result += alphabet[a >> 2];\n    result += alphabet[((a & 3) << 4) | (b >> 4)];\n    result += hasB ? alphabet[((b & 15) << 2) | (c >> 6)] : '=';\n    result += hasC ? alphabet[c & 63] : '=';\n  }\n  return result;\n}\n\nconst prepared = files.map((f) => {\n  const existing = targetTree.get(String(f.path ?? ''));\n  return {\n    ...f,\n    exists: Boolean(existing),\n    sha: String(existing?.sha ?? ''),\n    content_base64: utf8ToBase64(f.content)\n  };\n});\n\nreturn {\n  create_files: prepared.filter((f) => !f.exists),\n  update_files: prepared.filter((f) => f.exists)\n};"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "13cec2d2-4ba7-4859-a4a1-585effadbb3a": {
+        "id": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+        "type": "loop",
+        "name": "Create Files",
+        "position": {
+          "x": 3520,
+          "y": 920
+        },
+        "subBlocks": {},
+        "outputs": {},
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "width": 500,
+          "height": 300,
+          "collection": "<preparewrites.result.create_files>",
+          "count": 100,
+          "loopType": "forEach",
+          "whileCondition": "",
+          "doWhileCondition": "",
+          "type": "subflowNode"
+        },
+        "locked": false
+      },
+      "bd6c60bc-8422-4a1e-b6ad-7d4c20884d86": {
+        "id": "bd6c60bc-8422-4a1e-b6ad-7d4c20884d86",
+        "type": "api",
+        "name": "Create File 1",
+        "position": {
+          "x": 120,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/contents/<createfiles.currentItem.encoded_path>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\n  \"branch\": \"<validateimplementationinput.result.branch>\",\n  \"message\": \"feat(ai): create <createfiles.currentItem.path>\",\n  \"content\": \"<createfiles.currentItem.content_base64>\",\n  \"signoff\": false\n}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "9a07d00f-f003-4387-80a3-8d93f93f511c",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "2c4ec8a8-83bb-42b1-93cc-48b144c4b076",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "fffd9513-c329-4715-a63e-42e9e2185729",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "35c91cad-7024-487f-b17c-626c6d2885d4",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 230,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "parentId": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+          "extent": "parent"
+        },
+        "locked": false
+      },
+      "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239": {
+        "id": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+        "type": "loop",
+        "name": "Update Files",
+        "position": {
+          "x": 80,
+          "y": 1340
+        },
+        "subBlocks": {},
+        "outputs": {},
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "width": 500,
+          "height": 300,
+          "collection": "<preparewrites.result.update_files>",
+          "count": 100,
+          "loopType": "forEach",
+          "whileCondition": "",
+          "doWhileCondition": "",
+          "type": "subflowNode"
+        },
+        "locked": false
+      },
+      "7b0146fa-66a2-41b8-a36a-695c0de9e915": {
+        "id": "7b0146fa-66a2-41b8-a36a-695c0de9e915",
+        "type": "api",
+        "name": "Update File",
+        "position": {
+          "x": 120,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/contents/<updatefiles.currentItem.encoded_path>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\n  \"branch\": \"<validateimplementationinput.result.branch>\",\n  \"message\": \"feat(ai): update <updatefiles.currentItem.path>\",\n  \"content\": \"<updatefiles.currentItem.content_base64>\",\n  \"sha\": \"<updatefiles.currentItem.sha>\",\n  \"signoff\": false\n}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "PUT"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "dfbe3f13-40c7-4f2b-aba7-fee9410b5d33",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "368d21a3-1e17-4651-b25d-b8fba83297ac",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "208b1605-9961-4b40-82dc-998b8692531c",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "1f09960d-4398-498c-8e8c-a9d77d05b0fe",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "parentId": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+          "extent": "parent"
+        },
+        "locked": false
+      },
+      "402dbfc0-19d6-4b14-8d26-e1ff3d958ec7": {
+        "id": "402dbfc0-19d6-4b14-8d26-e1ff3d958ec7",
+        "type": "function",
+        "name": "Verify Implementation Writes",
+        "position": {
+          "x": 940,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const expectedCreate = <preparewrites.result.create_files>;\nconst expectedUpdate = <preparewrites.result.update_files>;\nconst createIterations = <createfiles.results>;\nconst updateIterations = <updatefiles.results>;\n\nfunction completedCount(iterations) {\n  let count = 0;\n  for (const iteration of Array.isArray(iterations) ? iterations : []) {\n    const outputs = Array.isArray(iteration) ? iteration : [];\n    const apiOutput = outputs.find((x) => x && Object.prototype.hasOwnProperty.call(x, 'data'));\n    if (apiOutput?.data?.content?.sha && apiOutput?.data?.commit?.sha) count++;\n  }\n  return count;\n}\n\nconst expected = expectedCreate.length + expectedUpdate.length;\nconst completedCreate = completedCount(createIterations);\nconst completedUpdate = completedCount(updateIterations);\nconst completed = completedCreate + completedUpdate;\n\nreturn {\n  valid: expected > 0 && completed === expected,\n  expected,\n  completed,\n  completed_create: completedCreate,\n  completed_update: completedUpdate\n};"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "58b13591-5b73-4fa3-b1a3-c80d69d34d8c": {
+        "id": "58b13591-5b73-4fa3-b1a3-c80d69d34d8c",
+        "type": "condition",
+        "name": "Writes Complete",
+        "position": {
+          "x": 1370,
+          "y": 1340
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"58b13591-5b73-4fa3-b1a3-c80d69d34d8c-if\",\"title\":\"if\",\"value\":\"<verifyimplementationwrites.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":50,\"activeSourceBlockId\":null},{\"id\":\"58b13591-5b73-4fa3-b1a3-c80d69d34d8c-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "87c2eb1a-3c7e-442d-ac66-e40ff1d963b9": {
+        "id": "87c2eb1a-3c7e-442d-ac66-e40ff1d963b9",
+        "type": "response",
+        "name": "Partial Write",
+        "position": {
+          "x": 1800,
+          "y": 1340
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<verifyimplementationwrites.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "500"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "dc7bf3e2-a282-421c-b8fe-6abfcfca06a2",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7e3681a1-e2b4-4614-b456-d4bc7511d3b9": {
+        "id": "7e3681a1-e2b4-4614-b456-d4bc7511d3b9",
+        "type": "function",
+        "name": "Prepare Development Contract",
+        "position": {
+          "x": 2230,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const input=<validateimplementationinput.result>;const artifact=input.artifact;const value={schema_version:'1.0',contract_type:'ai-demo-development-contract',workflow_id:'03-implementation-demo',run_id:input.run_id,owner:input.owner,repo:input.repo,base_branch:input.base_branch,branch:input.branch,requirements:artifact.requirements,architecture:artifact.architecture,repository_plan:artifact.repository_plan};return {package_owner:String(<start.artifact_owner>),package_name:'development-contracts',package_version:input.run_id,file_name:'development-contract.json',json:JSON.stringify(value),contract:value};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "979416c1-bdde-4e5c-8b29-8dafc82229ad": {
+        "id": "979416c1-bdde-4e5c-8b29-8dafc82229ad",
+        "type": "api",
+        "name": "Publish Development Contract",
+        "position": {
+          "x": 2660,
+          "y": 1340
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<preparedevelopmentcontract.result.package_owner>/generic/<preparedevelopmentcontract.result.package_name>/<preparedevelopmentcontract.result.package_version>/<preparedevelopmentcontract.result.file_name>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "<preparedevelopmentcontract.result.json>"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "PUT"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "f6c77a06-e287-48a5-9695-daeeaa23a63d",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "546be33e-de8f-4330-962b-cb61820de623",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "51b730e2-4790-454f-8fbf-2cfe7b442a6a",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "d53c12bf-c90b-4048-9cf2-c40e6c68df24": {
+        "id": "d53c12bf-c90b-4048-9cf2-c40e6c68df24",
+        "type": "function",
+        "name": "Check Contract Publication",
+        "position": {
+          "x": 3090,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status=Number(<publishdevelopmentcontract.status>);if(![200,201,204,409].includes(status))throw new Error(`Development contract upload failed: HTTP ${status}`);return {valid:true,status,already_exists:status===409};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "23d6f1cc-c60f-4bf1-8c71-e3ab5eb2de6c": {
+        "id": "23d6f1cc-c60f-4bf1-8c71-e3ab5eb2de6c",
+        "type": "api",
+        "name": "Find Existing PR",
+        "position": {
+          "x": 3520,
+          "y": 1340
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/pulls"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "18d055ce-f7a6-4502-99b9-3f76cfa3f0ca",
+                "cells": {
+                  "Key": "state",
+                  "Value": "open"
+                }
+              },
+              {
+                "id": "63721af9-4ca1-4e81-8d8e-0fa1a0e0bb0a",
+                "cells": {
+                  "Key": "page",
+                  "Value": "1"
+                }
+              },
+              {
+                "id": "3335b51c-33f3-4426-adc1-7b33496e354c",
+                "cells": {
+                  "Key": "limit",
+                  "Value": "100"
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "9598be1b-58e5-40d4-a3b5-52fcfa0ef958",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "0b7dc28c-bc51-4510-9030-9f88c9047bd5",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "082c60d1-9a82-4ea3-920c-357fe4502dbd": {
+        "id": "082c60d1-9a82-4ea3-920c-357fe4502dbd",
+        "type": "function",
+        "name": "Resolve Existing PR",
+        "position": {
+          "x": 3950,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status = Number(<findexistingpr.status>);\nif (status !== 200) throw new Error(`List pull requests failed: HTTP ${status}`);\nconst list = Array.isArray(<findexistingpr.data>) ? <findexistingpr.data> : [];\nconst branch = String(<validateimplementationinput.result.branch> ?? '');\nconst baseBranch = String(<validateimplementationinput.result.base_branch> ?? '');\nconst matches = list.filter(pr =>\n  String(pr?.state ?? '') === 'open' &&\n  String(pr?.head?.ref ?? '') === branch &&\n  String(pr?.base?.ref ?? '') === baseBranch\n);\nif (matches.length > 1) throw new Error(`Multiple open pull requests match ${branch} -> ${baseBranch}`);\nconst pr = matches[0] ?? null;\nconst number = Number(pr?.number ?? 0);\nconst result = pr ? {\n  status: 'pr_ready',\n  run_id: <validateimplementationinput.result.run_id>,\n  branch,\n  files: <validategeneratedfiles.result.files>.map(x => x.path),\n  pr_number: number,\n  pr_url: String(pr?.html_url ?? ''),\n  existing_pr: true,\n  manual_merge_required: true\n} : null;\nreturn {found: Boolean(pr && Number.isInteger(number) && number > 0), result, scanned: list.length, branch, base_branch: baseBranch};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "5b323bcb-e8e6-4085-b40d-c14c8798e370": {
+        "id": "5b323bcb-e8e6-4085-b40d-c14c8798e370",
+        "type": "condition",
+        "name": "Existing PR Found",
+        "position": {
+          "x": 80,
+          "y": 1760
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"5b323bcb-e8e6-4085-b40d-c14c8798e370-if\",\"title\":\"if\",\"value\":\"<resolveexistingpr.result.found> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":41,\"activeSourceBlockId\":null},{\"id\":\"5b323bcb-e8e6-4085-b40d-c14c8798e370-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "6a1f23fe-9e9f-4aeb-9871-51b077873938": {
+        "id": "6a1f23fe-9e9f-4aeb-9871-51b077873938",
+        "type": "api",
+        "name": "Create PR",
+        "position": {
+          "x": 510,
+          "y": 1760
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateimplementationinput.result.owner>/<validateimplementationinput.result.repo>/pulls"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\n  \"base\": \"<validateimplementationinput.result.base_branch>\",\n  \"head\": \"<validateimplementationinput.result.branch>\",\n  \"title\": \"WIP: AI implementation <validateimplementationinput.result.run_id>\",\n  \"body\": \"AI-generated change. Manual review and merge are required.\\n\\nRun ID: <validateimplementationinput.result.run_id>\"\n}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "78d25786-4a10-4c82-8e2f-1e696657477d",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "3a51e01b-0f80-4ae0-ae36-a07a583a747d",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "4cef3769-4554-480a-a8d9-d64308de0223",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 375,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7a6d2e4c-1d57-408d-b1bb-8e91b4d76dbe": {
+        "id": "7a6d2e4c-1d57-408d-b1bb-8e91b4d76dbe",
+        "type": "response",
+        "name": "Existing PR Ready",
+        "position": {
+          "x": 940,
+          "y": 1760
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<resolveexistingpr.result.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "0fc24078-5e46-4532-94c1-a492edfeca28",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f418a232-19ea-4863-9665-6077034d934a": {
+        "id": "f418a232-19ea-4863-9665-6077034d934a",
+        "type": "function",
+        "name": "Build Created PR Result",
+        "position": {
+          "x": 1370,
+          "y": 1760
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const pr = <createpr.data>;\nconst number = Number(pr?.number ?? 0);\nif (!Number.isInteger(number) || number < 1) throw new Error('Created PR response does not contain a valid number');\nreturn {status:'pr_ready',run_id:<validateimplementationinput.result.run_id>,branch:<validateimplementationinput.result.branch>,files:<validategeneratedfiles.result.files>.map(x=>x.path),pr_number:number,pr_url:String(pr?.html_url??''),existing_pr:false,manual_merge_required:true};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "d064e744-4796-484a-994e-db8ce48ba136": {
+        "id": "d064e744-4796-484a-994e-db8ce48ba136",
+        "type": "response",
+        "name": "Created PR Ready",
+        "position": {
+          "x": 1800,
+          "y": 1760
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<buildcreatedprresult.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "0fc24078-5e46-4532-94c1-a492edfeca28",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      }
+    },
+    "edges": [
+      {
+        "id": "c794d488-6c68-4b56-b504-505315859b60",
+        "source": "b40f1a3f-330f-4e92-94e7-ba9f7e844bfe",
+        "target": "59853efa-f20e-47e2-8c44-8fe8137094c1",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "61afb518-9638-4e45-a55f-b11152c0c80d",
+        "source": "59853efa-f20e-47e2-8c44-8fe8137094c1",
+        "target": "5fa47f26-bad9-4db2-9639-3f7ecb7a411d",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "8cbb596a-0bc4-434a-90b0-30870f4da484",
+        "source": "5fa47f26-bad9-4db2-9639-3f7ecb7a411d",
+        "target": "d70ce4c8-99ca-45c7-89c8-bf772c5d5415",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "1ca147ed-413a-4a02-b4aa-a3d852904a6a",
+        "source": "d70ce4c8-99ca-45c7-89c8-bf772c5d5415",
+        "target": "d9579f55-074e-4a0b-af29-e30c8575cd09",
+        "sourceHandle": "condition-d70ce4c8-99ca-45c7-89c8-bf772c5d5415-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7a0db071-9641-465c-b62e-ed6d38dbc949",
+        "source": "d70ce4c8-99ca-45c7-89c8-bf772c5d5415",
+        "target": "f2355c21-7cf5-4de2-8dfe-11516a36d783",
+        "sourceHandle": "condition-d70ce4c8-99ca-45c7-89c8-bf772c5d5415-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "bb6ed537-391f-417b-bdb7-04af1ba80a27",
+        "source": "d9579f55-074e-4a0b-af29-e30c8575cd09",
+        "target": "6e43f34d-6cc6-48a1-a3cc-27de50068f87",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6532516a-80a6-4e25-b77d-86fcdb15185f",
+        "source": "6e43f34d-6cc6-48a1-a3cc-27de50068f87",
+        "target": "300cfcbb-8d9c-4940-a419-cfb0d63d0d48",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "67ebdae3-7923-4f70-a08e-d54530873110",
+        "source": "300cfcbb-8d9c-4940-a419-cfb0d63d0d48",
+        "target": "3e775f68-0a65-480e-bcc4-ce5c16ebd17c",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "063bf78f-668c-4d68-b780-4b59d08d9a0d",
+        "source": "3e775f68-0a65-480e-bcc4-ce5c16ebd17c",
+        "target": "034a168c-414d-4aac-a7f5-3537218ceaec",
+        "sourceHandle": "condition-3e775f68-0a65-480e-bcc4-ce5c16ebd17c-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ee830391-4925-4d8c-812e-c8fca76acc45",
+        "source": "3e775f68-0a65-480e-bcc4-ce5c16ebd17c",
+        "target": "54a87b64-22d7-4e64-96cd-fc45bd3dd076",
+        "sourceHandle": "condition-3e775f68-0a65-480e-bcc4-ce5c16ebd17c-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "10f1ce08-c5ce-4fd5-98d6-a30683f9be9d",
+        "source": "034a168c-414d-4aac-a7f5-3537218ceaec",
+        "target": "5a33866d-46df-449a-b3fd-4e2208cacd36",
+        "sourceHandle": "condition-034a168c-414d-4aac-a7f5-3537218ceaec-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "cde301fc-4057-4b85-85ea-67fc5063b6b8",
+        "source": "034a168c-414d-4aac-a7f5-3537218ceaec",
+        "target": "b3889dfb-f491-4a3b-ab8f-6a6d911d55c9",
+        "sourceHandle": "condition-034a168c-414d-4aac-a7f5-3537218ceaec-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7c29cf6f-d5af-4f13-91de-121ba6ac064d",
+        "source": "b3889dfb-f491-4a3b-ab8f-6a6d911d55c9",
+        "target": "e8f969c9-31b4-49d9-990b-8043b7902cb2",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6adc4307-7a38-487b-af2d-9b2cd8556836",
+        "source": "e8f969c9-31b4-49d9-990b-8043b7902cb2",
+        "target": "5a33866d-46df-449a-b3fd-4e2208cacd36",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "4277035b-36d4-4283-b304-6c94fb7dd838",
+        "source": "5a33866d-46df-449a-b3fd-4e2208cacd36",
+        "target": "f2787fc6-e0b8-4c15-9628-a220ad121345",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "54f07eb0-bb84-49de-a12e-d36f45922087",
+        "source": "f2787fc6-e0b8-4c15-9628-a220ad121345",
+        "target": "05142e24-1487-4a16-b1c2-cb5f8254b6dd",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "d71e68a7-2bd7-41e3-9e9a-856211f2890a",
+        "source": "05142e24-1487-4a16-b1c2-cb5f8254b6dd",
+        "target": "dcbb6b5a-f1e8-4fe7-9f65-db7fa0f5df5f",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "3b7441de-2e79-47f1-a7cd-6da52fba975a",
+        "source": "dcbb6b5a-f1e8-4fe7-9f65-db7fa0f5df5f",
+        "target": "f7749083-58e1-4c3c-8957-84869f90dd08",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "37b73dcd-5baf-48f9-82d9-20f134faa0d8",
+        "source": "f7749083-58e1-4c3c-8957-84869f90dd08",
+        "target": "747c7149-83df-4dc2-b7d9-bce0d77b623f",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "803e1c65-c709-494e-9bc0-0e0eb6953518",
+        "source": "747c7149-83df-4dc2-b7d9-bce0d77b623f",
+        "target": "33838b88-81bf-4209-82e2-186118bfec77",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "0307da4b-e7f4-4a93-a1fb-2f9e48174cdc",
+        "source": "33838b88-81bf-4209-82e2-186118bfec77",
+        "target": "def7ea8a-caa4-4fe3-a783-0c7357a4183c",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "412f78df-977f-42f7-bbc2-17512de702be",
+        "source": "def7ea8a-caa4-4fe3-a783-0c7357a4183c",
+        "target": "f08a3426-5b08-4a0d-8ea5-85d4c5474f13",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "fc59e1c4-6fc0-451a-8e05-9e19ce0f035b",
+        "source": "f08a3426-5b08-4a0d-8ea5-85d4c5474f13",
+        "target": "3efdbff3-ed72-4f24-b148-0d19fdaac2bb",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "78fef5d5-d83c-4373-80ac-91132b3036ca",
+        "source": "3efdbff3-ed72-4f24-b148-0d19fdaac2bb",
+        "target": "640c6197-3afb-4c2f-b6e7-00554064a844",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "53e1274f-bed8-4498-9bd9-cff89ab803d7",
+        "source": "640c6197-3afb-4c2f-b6e7-00554064a844",
+        "target": "c1e95314-134a-4e74-a03a-51a789242a61",
+        "sourceHandle": "condition-640c6197-3afb-4c2f-b6e7-00554064a844-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "1f3cb775-5348-4c90-98f4-606f58663649",
+        "source": "640c6197-3afb-4c2f-b6e7-00554064a844",
+        "target": "44d1b5b6-1fe8-498e-90e5-d3b4862947fe",
+        "sourceHandle": "condition-640c6197-3afb-4c2f-b6e7-00554064a844-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "f40f8f9e-6e8d-40fc-8bcb-75a5d274ee29",
+        "source": "c1e95314-134a-4e74-a03a-51a789242a61",
+        "target": "9cdbde18-90a8-444f-8ac5-0ea6a9829e4f",
+        "sourceHandle": "condition-c1e95314-134a-4e74-a03a-51a789242a61-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "be943d44-a8dd-453c-8d2c-a43605e7e0b4",
+        "source": "c1e95314-134a-4e74-a03a-51a789242a61",
+        "target": "e431b32b-8064-4213-ac5b-04a909c6ba62",
+        "sourceHandle": "condition-c1e95314-134a-4e74-a03a-51a789242a61-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "96313fa5-6dab-42d2-9291-280b58ec41d0",
+        "source": "e431b32b-8064-4213-ac5b-04a909c6ba62",
+        "target": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "9ed8daf3-b8dd-4831-9380-fda7a5fd19c3",
+        "source": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+        "target": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+        "sourceHandle": "loop-end-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "797a61fb-b896-4b61-bc3d-eac5488d77a0",
+        "source": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+        "target": "402dbfc0-19d6-4b14-8d26-e1ff3d958ec7",
+        "sourceHandle": "loop-end-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6764e9fd-85a6-4bf5-a8ff-e466b102d87d",
+        "source": "402dbfc0-19d6-4b14-8d26-e1ff3d958ec7",
+        "target": "58b13591-5b73-4fa3-b1a3-c80d69d34d8c",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "68f93e7b-23c1-4559-97fc-d9ed96f72c5b",
+        "source": "58b13591-5b73-4fa3-b1a3-c80d69d34d8c",
+        "target": "7e3681a1-e2b4-4614-b456-d4bc7511d3b9",
+        "sourceHandle": "condition-58b13591-5b73-4fa3-b1a3-c80d69d34d8c-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "0525b22e-bf32-4189-bd2a-9f184fb029fe",
+        "source": "58b13591-5b73-4fa3-b1a3-c80d69d34d8c",
+        "target": "87c2eb1a-3c7e-442d-ac66-e40ff1d963b9",
+        "sourceHandle": "condition-58b13591-5b73-4fa3-b1a3-c80d69d34d8c-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "fe197685-e36c-4f06-8d8e-63e8dfd97c57",
+        "source": "7e3681a1-e2b4-4614-b456-d4bc7511d3b9",
+        "target": "979416c1-bdde-4e5c-8b29-8dafc82229ad",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "bea8a3d1-cfe7-47a4-b506-cca3aa22182a",
+        "source": "979416c1-bdde-4e5c-8b29-8dafc82229ad",
+        "target": "d53c12bf-c90b-4048-9cf2-c40e6c68df24",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "62c40420-194c-4274-bf65-9e5aa9cfb749",
+        "source": "d53c12bf-c90b-4048-9cf2-c40e6c68df24",
+        "target": "23d6f1cc-c60f-4bf1-8c71-e3ab5eb2de6c",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "c9f4b503-b14a-47fe-a9c6-605fe12feaa6",
+        "source": "23d6f1cc-c60f-4bf1-8c71-e3ab5eb2de6c",
+        "target": "082c60d1-9a82-4ea3-920c-357fe4502dbd",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "3e58164e-d986-4279-94ad-b5cd334d3029",
+        "source": "082c60d1-9a82-4ea3-920c-357fe4502dbd",
+        "target": "5b323bcb-e8e6-4085-b40d-c14c8798e370",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7cb9d953-4a48-4da4-be74-dcecb5fb040e",
+        "source": "5b323bcb-e8e6-4085-b40d-c14c8798e370",
+        "target": "7a6d2e4c-1d57-408d-b1bb-8e91b4d76dbe",
+        "sourceHandle": "condition-5b323bcb-e8e6-4085-b40d-c14c8798e370-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "9c3d0055-7ec9-4f9f-880d-64a4e6ed9d13",
+        "source": "5b323bcb-e8e6-4085-b40d-c14c8798e370",
+        "target": "6a1f23fe-9e9f-4aeb-9871-51b077873938",
+        "sourceHandle": "condition-5b323bcb-e8e6-4085-b40d-c14c8798e370-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "e9635b74-be06-48a8-8bf8-cf7fe1706828",
+        "source": "6a1f23fe-9e9f-4aeb-9871-51b077873938",
+        "target": "f418a232-19ea-4863-9665-6077034d934a",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "846a5824-4186-4277-80e0-2c548882d572",
+        "source": "f418a232-19ea-4863-9665-6077034d934a",
+        "target": "d064e744-4796-484a-994e-db8ce48ba136",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "d681c321-ecc6-4b01-addf-6cad0cb7b370",
+        "source": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+        "target": "bd6c60bc-8422-4a1e-b6ad-7d4c20884d86",
+        "sourceHandle": "loop-start-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ccd2e298-56e0-47b3-ad0f-0dd75edf7ded",
+        "source": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+        "target": "7b0146fa-66a2-41b8-a36a-695c0de9e915",
+        "sourceHandle": "loop-start-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {
+      "13cec2d2-4ba7-4859-a4a1-585effadbb3a": {
+        "id": "13cec2d2-4ba7-4859-a4a1-585effadbb3a",
+        "nodes": [
+          "bd6c60bc-8422-4a1e-b6ad-7d4c20884d86"
+        ],
+        "iterations": 100,
+        "loopType": "forEach",
+        "enabled": true,
+        "forEachItems": "<preparewrites.result.create_files>",
+        "whileCondition": "",
+        "doWhileCondition": ""
+      },
+      "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239": {
+        "id": "4f2dd7ca-ddd2-4c4e-94f8-0bad8618c239",
+        "nodes": [
+          "7b0146fa-66a2-41b8-a36a-695c0de9e915"
+        ],
+        "iterations": 100,
+        "loopType": "forEach",
+        "enabled": true,
+        "forEachItems": "<preparewrites.result.update_files>",
+        "whileCondition": "",
+        "doWhileCondition": ""
+      }
+    },
+    "parallels": {},
+    "metadata": {
+      "name": "03 — Генерация FastAPI и PR [demo simple]",
+      "description": "Application Developer, Test Developer и Documentation Writer создают свои части проекта без лимита числа файлов; один ограниченный repair-проход исправляет дефекты генерации до записи и PR.",
+      "variant": "fastapi-demo-simple-v1",
+      "profile_id": "python-fastapi-3.12",
+      "target_repository": "labadmin/demo-fastapi",
+      "model": "qwen3-coder-next:latest",
+      "thinking": "none"
+    },
+    "variables": {}
+  }
+}

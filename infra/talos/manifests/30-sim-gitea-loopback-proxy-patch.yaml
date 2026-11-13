@@ -1,0 +1,145 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        ai-devsecops/gitea-loopback-proxy: "v1"
+    spec:
+      containers:
+        - name: gitea-loopback-proxy
+          image: ghcr.io/simstudioai/simstudio:v0.7.29
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - node
+            - -e
+
+          args:
+            - |
+              const http = require('http');
+
+              const upstreamHost = 'gitea-http.gitea.svc.cluster.local';
+              const upstreamPort = 3000;
+
+              const listenHost = '127.0.0.1';
+              const listenPort = 18080;
+
+              const allowedPath = /^\/(?:api\/v1\/|api\/packages\/)/;
+
+              const server = http.createServer((req, res) => {
+                const path = String(req.url || '/');
+
+                if (path === '/__health') {
+                  res.writeHead(200, {
+                    'content-type': 'text/plain; charset=utf-8'
+                  });
+                  res.end('ok');
+                  return;
+                }
+
+                if (!allowedPath.test(path)) {
+                  res.writeHead(404, {
+                    'content-type': 'text/plain; charset=utf-8'
+                  });
+                  res.end('path is not allowed');
+                  return;
+                }
+
+                const headers = {
+                  ...req.headers,
+                  host: `${upstreamHost}:${upstreamPort}`
+                };
+
+                delete headers.connection;
+                delete headers.upgrade;
+                delete headers['proxy-connection'];
+
+                const upstream = http.request(
+                  {
+                    hostname: upstreamHost,
+                    port: upstreamPort,
+                    method: req.method,
+                    path,
+                    headers
+                  },
+                  (upstreamResponse) => {
+                    const responseHeaders = {
+                      ...upstreamResponse.headers
+                    };
+
+                    delete responseHeaders.connection;
+                    delete responseHeaders['keep-alive'];
+                    delete responseHeaders.upgrade;
+
+                    res.writeHead(
+                      upstreamResponse.statusCode || 502,
+                      responseHeaders
+                    );
+
+                    upstreamResponse.pipe(res);
+                  }
+                );
+
+                upstream.setTimeout(300000, () => {
+                  upstream.destroy(
+                    new Error('Gitea upstream request timed out')
+                  );
+                });
+
+                upstream.on('error', (error) => {
+                  console.error('Gitea proxy error:', error.message);
+
+                  if (res.headersSent) {
+                    res.destroy(error);
+                    return;
+                  }
+
+                  res.writeHead(502, {
+                    'content-type': 'text/plain; charset=utf-8'
+                  });
+
+                  res.end('Gitea proxy error');
+                });
+
+                req.on('aborted', () => {
+                  upstream.destroy();
+                });
+
+                req.pipe(upstream);
+              });
+
+              server.listen(listenPort, listenHost, () => {
+                console.log(
+                  `Gitea loopback proxy listening on http://${listenHost}:${listenPort}`
+                );
+              });
+
+              const shutdown = () => {
+                server.close(() => process.exit(0));
+              };
+
+              process.on('SIGTERM', shutdown);
+              process.on('SIGINT', shutdown);
+
+          ports:
+            - name: gitea-proxy
+              containerPort: 18080
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault

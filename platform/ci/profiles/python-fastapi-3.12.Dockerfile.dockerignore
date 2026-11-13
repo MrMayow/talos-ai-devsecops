@@ -1,0 +1,10 @@
+.git
+.gitea
+artifacts
+docs
+k8s
+README.md
+__pycache__
+.pytest_cache
+.venv
+*.pyc

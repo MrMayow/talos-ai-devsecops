@@ -1,0 +1,1520 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-08-05T20:07:47.731665Z",
+  "state": {
+    "blocks": {
+      "ee4658c9-a06b-45f1-a899-9b8e207cae3d": {
+        "id": "ee4658c9-a06b-45f1-a899-9b8e207cae3d",
+        "type": "start_trigger",
+        "name": "Start",
+        "position": {
+          "x": 80,
+          "y": 80
+        },
+        "subBlocks": {
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "83f02527-1a47-47e0-831e-a9368079f002",
+                "name": "artifact_owner",
+                "type": "string",
+                "value": "labadmin",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "c74fdaa3-df31-4b31-b5f5-11f213a2add3",
+                "name": "artifact_package",
+                "type": "string",
+                "value": "ai-demo-artifacts",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "bbf8055f-04af-4b56-9ce7-9f1840eaaff2",
+                "name": "artifact_version",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": "run_id из Workflow 01"
+              },
+              {
+                "id": "d9f917f2-9c3f-4e7a-8ccc-136a53656643",
+                "name": "requirements_file",
+                "type": "string",
+                "value": "requirements.json",
+                "collapsed": true,
+                "description": ""
+              }
+            ]
+          }
+        },
+        "outputs": {
+          "files": {
+            "type": "file[]",
+            "description": "User uploaded files"
+          },
+          "input": {
+            "type": "string",
+            "description": "Primary user input or message"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation thread identifier"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "a0df2291-a372-4017-b6ef-6ff8d30ffc7b": {
+        "id": "a0df2291-a372-4017-b6ef-6ff8d30ffc7b",
+        "type": "api",
+        "name": "Get Requirements Artifact",
+        "position": {
+          "x": 510,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<start.artifact_owner>/generic/<start.artifact_package>/<start.artifact_version>/<start.requirements_file>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "2fc21c9c-073e-4a0a-9e87-a19a67a62fb9",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "658aa8e3-d31a-41a9-a59a-2fd9c4a7e486",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7fd08320-3073-42fa-8363-e529da3f8998": {
+        "id": "7fd08320-3073-42fa-8363-e529da3f8998",
+        "type": "function",
+        "name": "Validate Requirements Input",
+        "position": {
+          "x": 940,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const errors=[];\nlet artifact=<getrequirementsartifact.data>;\nif(Number(<getrequirementsartifact.status>)!==200) errors.push('Requirements artifact не получен');\nfor(let i=0;i<2 && typeof artifact==='string';i++){try{artifact=JSON.parse(artifact);}catch(_){errors.push('Requirements artifact не JSON');artifact=null;break;}}\nif(artifact?.data && typeof artifact.data==='object') artifact=artifact.data;\nif(!artifact || typeof artifact!=='object') errors.push('Requirements artifact отсутствует');\nif(artifact && artifact.workflow_id!=='01-requirements-demo') errors.push('Неверный источник requirements');\nif(artifact && artifact.status!=='approved') errors.push('Requirements не approved');\nif(!/^run-\\d{8}-\\d{6}-[a-z0-9]{6}$/.test(String(artifact?.run_id??''))) errors.push('Некорректный run_id');\nreturn {valid:errors.length===0,errors,artifact};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "93c873c1-3600-4417-91b0-e2607640f42e": {
+        "id": "93c873c1-3600-4417-91b0-e2607640f42e",
+        "type": "condition",
+        "name": "Requirements Input Valid",
+        "position": {
+          "x": 1370,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"93c873c1-3600-4417-91b0-e2607640f42e-if\",\"title\":\"if\",\"value\":\"<validaterequirementsinput.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":49,\"activeSourceBlockId\":null},{\"id\":\"93c873c1-3600-4417-91b0-e2607640f42e-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "c7d7dcc1-4202-4103-8b18-ea0cf2e302b5": {
+        "id": "c7d7dcc1-4202-4103-8b18-ea0cf2e302b5",
+        "type": "response",
+        "name": "Invalid Requirements Input",
+        "position": {
+          "x": 1800,
+          "y": 80
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validaterequirementsinput.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "5dfc9bd4-88d7-40e9-a0b8-371a19c0f317",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "1e2a9e82-b303-4350-9c51-61becef8a9a0": {
+        "id": "1e2a9e82-b303-4350-9c51-61becef8a9a0",
+        "type": "agent",
+        "name": "Solution Architect",
+        "position": {
+          "x": 2230,
+          "y": 80
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты архитектор демонстрационного FastAPI-проекта. Верни только JSON Response\nFormat. На основании утверждённых требований подготовь компактную архитектуру\nи полный список application-owned файлов. Профиль фиксирован: Python 3.12,\nFastAPI, app.main:app, /health, /openapi.json, pytest. Не включай .gitea/**,\nci/**, secrets, .env, контейнерные и инфраструктурные файлы. План обязательно\nвключает app/__init__.py, app/main.py, requirements.txt,\nrequirements-dev.txt, хотя бы один tests/test_*.py и полный комплект\nдокументации: docs/USER_GUIDE.md, docs/ADMIN_GUIDE.md и\ndocs/TECHNICAL_GUIDE.md. Техническое руководство объединяет API, архитектуру,\nструктуру проекта, технологии и тестирование. В purpose каждого документа\nперечисли его фактическое содержание и аудиторию. Не добавляй бизнес-функции\nбез основания. Архитектура должна быть достаточной для генерации полного\nзапускаемого проекта и всей его документации, но без кода и без вымышленных\nсведений об окружении. Не подгоняй repository plan под фиксированное количество\nфайлов: включи столько application-owned файлов, сколько действительно нужно."
+              },
+              {
+                "role": "user",
+                "content": "TARGET: <validaterequirementsinput.result.artifact.target>\nREQUIREMENTS: <validaterequirementsinput.result.artifact.requirements>\n\nСформируй архитектуру, тестовую стратегию и полный список необходимых файлов\nбез искусственного ограничения их количества. Все три обязательных документа\nиз требований должны присутствовать отдельными файлами."
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "12288"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_architecture\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2500\n      },\n      \"architecture\": {\n        \"type\": \"string\",\n        \"maxLength\": 22000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"purpose\": {\n              \"type\": \"string\",\n              \"maxLength\": 700\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"purpose\"\n          ]\n        }\n      },\n      \"test_strategy\": {\n        \"type\": \"string\",\n        \"maxLength\": 4000\n      },\n      \"risks\": {\n        \"type\": \"array\",\n        \"maxItems\": 10,\n        \"items\": {\n          \"type\": \"string\",\n          \"maxLength\": 800\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"architecture\",\n      \"files\",\n      \"test_strategy\",\n      \"risks\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "a8f7a733-0c3a-4314-813f-b46f5b9573af": {
+        "id": "a8f7a733-0c3a-4314-813f-b46f5b9573af",
+        "type": "function",
+        "name": "Validate Architecture",
+        "position": {
+          "x": 2660,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const architecture={summary:String(<solutionarchitect.summary>??'').trim(),architecture:String(<solutionarchitect.architecture>??'').trim(),files:Array.isArray(<solutionarchitect.files>)?<solutionarchitect.files>:[],test_strategy:String(<solutionarchitect.test_strategy>??'').trim(),risks:Array.isArray(<solutionarchitect.risks>)?<solutionarchitect.risks>:[]};\nconst errors=[]; const seen=new Set(); const safe=/^(?!\\/)(?!.*\\.\\.)(?!.*\\\\)[A-Za-z0-9._/-]+$/;\nif(architecture.architecture.length<300) errors.push('Архитектура слишком короткая');\nfor(const item of architecture.files){const path=String(item?.path??'').trim();if(!safe.test(path)||/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(path))errors.push(`Недопустимый path: ${path}`);if(seen.has(path.toLowerCase()))errors.push(`Дубликат path: ${path}`);seen.add(path.toLowerCase());}\nfor(const required of ['app/__init__.py','app/main.py','requirements.txt','requirements-dev.txt','docs/USER_GUIDE.md','docs/ADMIN_GUIDE.md','docs/TECHNICAL_GUIDE.md']) if(!seen.has(required.toLowerCase())) errors.push(`Нет обязательного файла: ${required}`);\nif(!architecture.files.some(x=>String(x?.path??'').startsWith('tests/'))) errors.push('Нет тестового файла');\nreturn {valid:errors.length===0,errors,architecture,requirements_artifact:<validaterequirementsinput.result.artifact>};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "555bd768-b211-404f-a287-c7d6d0a0e981": {
+        "id": "555bd768-b211-404f-a287-c7d6d0a0e981",
+        "type": "condition",
+        "name": "Architecture Valid",
+        "position": {
+          "x": 3090,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"555bd768-b211-404f-a287-c7d6d0a0e981-if\",\"title\":\"if\",\"value\":\"<validatearchitecture.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":44,\"activeSourceBlockId\":null},{\"id\":\"555bd768-b211-404f-a287-c7d6d0a0e981-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "fdfbaac4-772a-4104-aafc-e1ca17d0aa40": {
+        "id": "fdfbaac4-772a-4104-aafc-e1ca17d0aa40",
+        "type": "response",
+        "name": "Invalid Architecture",
+        "position": {
+          "x": 3520,
+          "y": 80
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validatearchitecture.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "8451cfbf-4374-486d-bd79-a0a6ec7ae740",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "9c7b33b1-6242-4195-b321-99150473b421": {
+        "id": "9c7b33b1-6242-4195-b321-99150473b421",
+        "type": "human_in_the_loop",
+        "name": "Architecture Approval",
+        "position": {
+          "x": 3950,
+          "y": 80
+        },
+        "subBlocks": {
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": [
+              {
+                "id": "e77f48c4-c38a-4a3f-b441-90cced13d81c",
+                "name": "run_id",
+                "type": "string",
+                "value": "<validatearchitecture.result.requirements_artifact.run_id>",
+                "collapsed": true
+              },
+              {
+                "id": "4aa28f58-aab5-4a94-a1d2-ef6d997e66a7",
+                "name": "summary",
+                "type": "string",
+                "value": "<validatearchitecture.result.architecture.summary>",
+                "collapsed": false
+              },
+              {
+                "id": "fcc21763-2790-47d5-bbdb-e4ab8efdebfd",
+                "name": "architecture",
+                "type": "string",
+                "value": "<validatearchitecture.result.architecture.architecture>",
+                "collapsed": true
+              },
+              {
+                "id": "fcc0d850-ed75-41b7-a2e7-dbf3877ab233",
+                "name": "files",
+                "type": "string",
+                "value": "<validatearchitecture.result.architecture.files>",
+                "collapsed": false
+              },
+              {
+                "id": "8f0fc133-e479-438f-95ea-85947e1c57d6",
+                "name": "instruction",
+                "type": "string",
+                "value": "approve — продолжить; reject — остановить",
+                "collapsed": false
+              }
+            ]
+          },
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "77a556da-f4f2-49e6-b10a-69a33af4e896",
+                "name": "decision",
+                "type": "string",
+                "value": "",
+                "collapsed": false,
+                "description": "Только approve или reject"
+              },
+              {
+                "id": "ebc64b7b-2df1-44c1-a8cf-0ade33a7583f",
+                "name": "comments",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": "Комментарий обязателен только для reject"
+              }
+            ]
+          },
+          "notification": {
+            "id": "notification",
+            "type": "tool-input",
+            "value": []
+          }
+        },
+        "outputs": {
+          "url": {
+            "type": "string",
+            "description": "Resume UI URL"
+          },
+          "submittedAt": {
+            "type": "string",
+            "description": "ISO timestamp when the workflow was resumed"
+          },
+          "resumeEndpoint": {
+            "type": "string",
+            "description": "Resume API endpoint URL for direct curl requests"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "8a73b270-e5e5-44b6-9c38-c081a67db78a": {
+        "id": "8a73b270-e5e5-44b6-9c38-c081a67db78a",
+        "type": "function",
+        "name": "Normalize Decision",
+        "position": {
+          "x": 80,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const decision=String(<architectureapproval.decision>??'').trim().toLowerCase();const comments=String(<architectureapproval.comments>??'').trim();const valid=['approve','reject'].includes(decision)&&(decision!=='reject'||comments.length>=3);return {valid,decision,comments,error:valid?'':'Допустимы approve или reject; для reject нужен комментарий'};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f7b0df14-f117-45e9-ae1e-003148b8d203": {
+        "id": "f7b0df14-f117-45e9-ae1e-003148b8d203",
+        "type": "condition",
+        "name": "Decision",
+        "position": {
+          "x": 510,
+          "y": 500
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"f7b0df14-f117-45e9-ae1e-003148b8d203-if\",\"title\":\"if\",\"value\":\"<normalizedecision.result.valid> === false\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":42,\"activeSourceBlockId\":null},{\"id\":\"f7b0df14-f117-45e9-ae1e-003148b8d203-else-if-1\",\"title\":\"approve\",\"value\":\"String(<normalizedecision.result.decision> ?? '') === 'approve'\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":63,\"activeSourceBlockId\":null},{\"id\":\"f7b0df14-f117-45e9-ae1e-003148b8d203-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "0db1e87e-cd7c-4d49-b88b-15d0049010f7": {
+        "id": "0db1e87e-cd7c-4d49-b88b-15d0049010f7",
+        "type": "response",
+        "name": "Invalid Decision",
+        "position": {
+          "x": 940,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<normalizedecision.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "e4ca1f3a-92f1-4253-98cb-599905e4a721",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "96e78cdd-af7b-40c7-858a-ccf49ce908d6": {
+        "id": "96e78cdd-af7b-40c7-858a-ccf49ce908d6",
+        "type": "response",
+        "name": "Rejected",
+        "position": {
+          "x": 1370,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<normalizedecision.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "d695c62f-15f4-4dd7-952b-c86b39086d08",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "323272c8-c6d6-4d1f-b284-49ad2617f111": {
+        "id": "323272c8-c6d6-4d1f-b284-49ad2617f111",
+        "type": "function",
+        "name": "Build Architecture Artifact",
+        "position": {
+          "x": 1800,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const req=<validatearchitecture.result.requirements_artifact>;const value=<validatearchitecture.result.architecture>;const file='architecture.json';const ref={owner:String(<start.artifact_owner>),package:String(<start.artifact_package>),version:req.run_id,file};const artifact={schema_version:'1.0',workflow_id:'02-architecture-demo',status:'approved',run_id:req.run_id,target:req.target,requirements:req.requirements,architecture:value.architecture,architecture_summary:value.summary,repository_plan:{files:value.files},test_strategy:value.test_strategy,risks:value.risks,approval:{decision:'approve',submitted_at:<architectureapproval.submittedAt>},artifact_ref:ref};const trigger={input:{artifact_owner:ref.owner,artifact_package:ref.package,artifact_version:ref.version,architecture_file:ref.file,dry_run:false}};return {artifact,artifact_ref:ref,artifact_json:JSON.stringify(artifact),trigger_json:JSON.stringify(trigger)};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "67dd30b4-10c2-4a56-a629-bd90dc06d26e": {
+        "id": "67dd30b4-10c2-4a56-a629-bd90dc06d26e",
+        "type": "api",
+        "name": "Publish Architecture Artifact",
+        "position": {
+          "x": 2230,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<buildarchitectureartifact.result.artifact_ref.owner>/generic/<buildarchitectureartifact.result.artifact_ref.package>/<buildarchitectureartifact.result.artifact_ref.version>/<buildarchitectureartifact.result.artifact_ref.file>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "<buildarchitectureartifact.result.artifact_json>"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "PUT"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "8ae52459-e650-4a94-8252-de49b171a5a4",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "647e0dbf-cf6e-4d0a-b496-19e6881425f3",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "ec21ec81-3e27-409b-a665-e56aca0b35ad",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "3ef9374a-b720-4f6d-a948-72df698842fb": {
+        "id": "3ef9374a-b720-4f6d-a948-72df698842fb",
+        "type": "function",
+        "name": "Check Architecture Publication",
+        "position": {
+          "x": 2660,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status=Number(<publisharchitectureartifact.status>);if(![200,201,204].includes(status))throw new Error(`Architecture package upload failed: HTTP ${status}`);return {valid:true,status};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f0f41efe-5166-4f04-a182-dcbb3dcab6ea": {
+        "id": "f0f41efe-5166-4f04-a182-dcbb3dcab6ea",
+        "type": "api",
+        "name": "Trigger Workflow 03",
+        "position": {
+          "x": 3090,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{SIM_INTERNAL_URL}}/api/workflows/{{SIM_WORKFLOW03_ID}}/execute"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "<buildarchitectureartifact.result.trigger_json>"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "3a875726-a84f-4943-a8e2-498b19d2e8d3",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "32bc2b14-21b7-440d-9d8b-b97f9aa8939d",
+                "cells": {
+                  "Key": "x-api-key",
+                  "Value": "{{SIM_WORKFLOW_API_KEY}}"
+                }
+              },
+              {
+                "id": "43e92667-972b-4a59-a42d-a75ca0b3527e",
+                "cells": {
+                  "Key": "X-Execution-Mode",
+                  "Value": "async"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7402be6c-3935-4747-b3a5-483ea4ae04bb": {
+        "id": "7402be6c-3935-4747-b3a5-483ea4ae04bb",
+        "type": "function",
+        "name": "Check Workflow 03 Trigger",
+        "position": {
+          "x": 3520,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status=Number(<triggerworkflow03.status>);if(![200,201,202,204].includes(status))throw new Error(`Workflow 03 dispatch failed: HTTP ${status}`);return {valid:true,status};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "4953a859-7208-42e4-91ae-2cce8ba9c727": {
+        "id": "4953a859-7208-42e4-91ae-2cce8ba9c727",
+        "type": "response",
+        "name": "Approved",
+        "position": {
+          "x": 3950,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<buildarchitectureartifact.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "c1271fe0-adfd-4738-b182-ff409a47f03c",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      }
+    },
+    "edges": [
+      {
+        "id": "2be50ca2-c697-4694-876a-4d4f00b16fd4",
+        "source": "ee4658c9-a06b-45f1-a899-9b8e207cae3d",
+        "target": "a0df2291-a372-4017-b6ef-6ff8d30ffc7b",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7a741c01-cdf8-4aab-9826-a36d10a90444",
+        "source": "a0df2291-a372-4017-b6ef-6ff8d30ffc7b",
+        "target": "7fd08320-3073-42fa-8363-e529da3f8998",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "93aa5ecb-e295-44be-b49d-2ff13afb76b7",
+        "source": "7fd08320-3073-42fa-8363-e529da3f8998",
+        "target": "93c873c1-3600-4417-91b0-e2607640f42e",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "1ecd17dc-8d4b-470b-ab00-1cd49c6d4d75",
+        "source": "93c873c1-3600-4417-91b0-e2607640f42e",
+        "target": "1e2a9e82-b303-4350-9c51-61becef8a9a0",
+        "sourceHandle": "condition-93c873c1-3600-4417-91b0-e2607640f42e-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "c1f0a08e-7cf2-4ebd-8b5e-5b0e3873a149",
+        "source": "93c873c1-3600-4417-91b0-e2607640f42e",
+        "target": "c7d7dcc1-4202-4103-8b18-ea0cf2e302b5",
+        "sourceHandle": "condition-93c873c1-3600-4417-91b0-e2607640f42e-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "11f58feb-be19-453a-9ee1-acf91558b51d",
+        "source": "1e2a9e82-b303-4350-9c51-61becef8a9a0",
+        "target": "a8f7a733-0c3a-4314-813f-b46f5b9573af",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2ca800a3-dd5b-4dba-891c-abd4c7b15d4e",
+        "source": "a8f7a733-0c3a-4314-813f-b46f5b9573af",
+        "target": "555bd768-b211-404f-a287-c7d6d0a0e981",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "8e8fa8b1-eb82-4cdc-a560-75c977533523",
+        "source": "555bd768-b211-404f-a287-c7d6d0a0e981",
+        "target": "9c7b33b1-6242-4195-b321-99150473b421",
+        "sourceHandle": "condition-555bd768-b211-404f-a287-c7d6d0a0e981-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "12c43d14-7d0f-4cc3-bece-fbf6725844ab",
+        "source": "555bd768-b211-404f-a287-c7d6d0a0e981",
+        "target": "fdfbaac4-772a-4104-aafc-e1ca17d0aa40",
+        "sourceHandle": "condition-555bd768-b211-404f-a287-c7d6d0a0e981-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2f525904-0484-4dbf-9cd6-b2e5975a4a47",
+        "source": "9c7b33b1-6242-4195-b321-99150473b421",
+        "target": "8a73b270-e5e5-44b6-9c38-c081a67db78a",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "3cd140b4-b89a-4862-b9aa-b7eb98d91b7a",
+        "source": "8a73b270-e5e5-44b6-9c38-c081a67db78a",
+        "target": "f7b0df14-f117-45e9-ae1e-003148b8d203",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6c57d6ec-3a09-4cf0-a5eb-0fe3aac21578",
+        "source": "f7b0df14-f117-45e9-ae1e-003148b8d203",
+        "target": "0db1e87e-cd7c-4d49-b88b-15d0049010f7",
+        "sourceHandle": "condition-f7b0df14-f117-45e9-ae1e-003148b8d203-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "0d93c59d-e90b-47ae-bf0b-6876ef6b7d6e",
+        "source": "f7b0df14-f117-45e9-ae1e-003148b8d203",
+        "target": "323272c8-c6d6-4d1f-b284-49ad2617f111",
+        "sourceHandle": "condition-f7b0df14-f117-45e9-ae1e-003148b8d203-else-if-1",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "513667d8-1247-48b0-9f4e-3c3edd8e1e15",
+        "source": "f7b0df14-f117-45e9-ae1e-003148b8d203",
+        "target": "96e78cdd-af7b-40c7-858a-ccf49ce908d6",
+        "sourceHandle": "condition-f7b0df14-f117-45e9-ae1e-003148b8d203-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "d54c5935-f428-4d9f-893a-7b51696b9c4b",
+        "source": "323272c8-c6d6-4d1f-b284-49ad2617f111",
+        "target": "67dd30b4-10c2-4a56-a629-bd90dc06d26e",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "c345089f-3880-4926-8946-f9c9075df8f5",
+        "source": "67dd30b4-10c2-4a56-a629-bd90dc06d26e",
+        "target": "3ef9374a-b720-4f6d-a948-72df698842fb",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "efdf9989-4019-478a-ab01-9f4f555ee1b2",
+        "source": "3ef9374a-b720-4f6d-a948-72df698842fb",
+        "target": "f0f41efe-5166-4f04-a182-dcbb3dcab6ea",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "3a42b114-963e-4044-99a0-2fd39a6fa74c",
+        "source": "f0f41efe-5166-4f04-a182-dcbb3dcab6ea",
+        "target": "7402be6c-3935-4747-b3a5-483ea4ae04bb",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "1a854c67-e786-4ec3-86c1-20aa55914218",
+        "source": "7402be6c-3935-4747-b3a5-483ea4ae04bb",
+        "target": "4953a859-7208-42e4-91ae-2cce8ba9c727",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {},
+    "parallels": {},
+    "metadata": {
+      "name": "02 — Архитектура FastAPI [demo simple]",
+      "description": "Один архитектор формирует архитектуру и repository plan без отдельного reviewer.",
+      "variant": "fastapi-demo-simple-v1",
+      "profile_id": "python-fastapi-3.12",
+      "target_repository": "labadmin/demo-fastapi",
+      "model": "qwen3-coder-next:latest",
+      "thinking": "none"
+    },
+    "variables": {}
+  }
+}

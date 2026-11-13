@@ -1,0 +1,8 @@
+FROM qwen2.5-coder:14b
+
+# 32K leaves room for both the bounded input contract and the generated files.
+# The alias was smoke-tested on the target RTX 4080 SUPER 16 GB.
+PARAMETER num_ctx 30720
+PARAMETER temperature 0.1
+PARAMETER top_p 0.8
+PARAMETER repeat_penalty 1.05

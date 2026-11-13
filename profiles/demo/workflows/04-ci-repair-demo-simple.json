@@ -1,0 +1,3760 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-08-05T20:07:47.739675Z",
+  "state": {
+    "blocks": {
+      "a77f6bef-1b50-4a03-8825-f22ec1f33fde": {
+        "id": "a77f6bef-1b50-4a03-8825-f22ec1f33fde",
+        "type": "start_trigger",
+        "name": "Start",
+        "position": {
+          "x": 80,
+          "y": 80
+        },
+        "subBlocks": {
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "3c9a4d8b-55e2-48f4-8580-a40ad74fed80",
+                "name": "run_id",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": "Исходный run_id"
+              },
+              {
+                "id": "a59793c2-ebe6-426c-abe4-f8cd57875a12",
+                "name": "owner",
+                "type": "string",
+                "value": "labadmin",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "d38d81c2-fd0f-4f8c-8852-7f7de2db0600",
+                "name": "repo",
+                "type": "string",
+                "value": "demo-fastapi",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "1fb34daf-ed56-4c3d-afbe-7247164ffae2",
+                "name": "branch",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "7d66a875-afe0-4294-8397-a63eea282d52",
+                "name": "commit_sha",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "93cc8485-ade2-4cb7-9c4f-a8fd1d5ed015",
+                "name": "pr_number",
+                "type": "number",
+                "value": 0,
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "738dc17b-6eb2-4ab1-9460-269413d28e9e",
+                "name": "artifact_owner",
+                "type": "string",
+                "value": "labadmin",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "2fd4184f-6ca3-4dcb-904c-a322338fce58",
+                "name": "artifact_package",
+                "type": "string",
+                "value": "ci-artifacts",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "febc2980-3a06-4713-a4d4-9d623d13ec23",
+                "name": "artifact_version",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "930321b1-417c-4bfd-917b-2416dfaabee8",
+                "name": "context_owner",
+                "type": "string",
+                "value": "labadmin",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "d26a13f7-1363-4105-a60c-bf6f7082ed6e",
+                "name": "context_package",
+                "type": "string",
+                "value": "development-contracts",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "2a48b6bd-6761-49b4-b7eb-d4db213da1dc",
+                "name": "context_version",
+                "type": "string",
+                "value": "",
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "0261d05a-abeb-44d2-a9ac-352182334ab0",
+                "name": "attempt",
+                "type": "number",
+                "value": 1,
+                "collapsed": true,
+                "description": ""
+              },
+              {
+                "id": "50e2798f-3740-41d5-9d14-6081dc7bccae",
+                "name": "dry_run",
+                "type": "boolean",
+                "value": false,
+                "collapsed": true,
+                "description": ""
+              }
+            ]
+          }
+        },
+        "outputs": {
+          "files": {
+            "type": "file[]",
+            "description": "User uploaded files"
+          },
+          "input": {
+            "type": "string",
+            "description": "Primary user input or message"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation thread identifier"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "1036065b-25ca-4df2-a209-dc9683539011": {
+        "id": "1036065b-25ca-4df2-a209-dc9683539011",
+        "type": "function",
+        "name": "Validate Input",
+        "position": {
+          "x": 510,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const text=v=>String(v??'').trim();const safe=v=>/^[A-Za-z0-9_.-]{1,100}$/.test(v);const errors=[];\nconst runId=text(<start.run_id>),owner=text(<start.owner>),repo=text(<start.repo>),branch=text(<start.branch>),commitSha=text(<start.commit_sha>).toLowerCase(),artifactOwner=text(<start.artifact_owner>),artifactPackage=text(<start.artifact_package>),artifactVersion=text(<start.artifact_version>),contextOwner=text(<start.context_owner>),contextPackage=text(<start.context_package>),contextVersion=text(<start.context_version>);const attempt=Number(<start.attempt>??1),prNumber=Number(<start.pr_number>??0);\nif(!/^run-\\d{8}-\\d{6}-[a-z0-9]{6}$/.test(runId))errors.push('Некорректный run_id');if(!safe(owner)||!safe(repo))errors.push('Некорректный owner/repo');if(!branch||branch.length>200||branch.includes('..'))errors.push('Некорректная branch');if(!/^[0-9a-f]{40,64}$/.test(commitSha))errors.push('Некорректный commit_sha');for(const [name,value] of [['artifact_owner',artifactOwner],['artifact_package',artifactPackage],['artifact_version',artifactVersion],['context_owner',contextOwner],['context_package',contextPackage],['context_version',contextVersion]])if(!safe(value))errors.push(`Некорректный ${name}`);if(!Number.isInteger(prNumber)||prNumber<1)errors.push('Некорректный pr_number');if(!Number.isInteger(attempt)||attempt<1||attempt>5)errors.push('Demo поддерживает attempts 1..5');\nreturn {valid:errors.length===0,errors,run_id:runId,owner,repo,branch,branch_encoded:encodeURIComponent(branch),commit_sha:commitSha,pr_number:prNumber,artifact_owner:artifactOwner,artifact_package:artifactPackage,artifact_version:artifactVersion,artifact_version_encoded:encodeURIComponent(artifactVersion),context_owner:contextOwner,context_package:contextPackage,context_version:contextVersion,context_version_encoded:encodeURIComponent(contextVersion),attempt,dry_run:Boolean(<start.dry_run>)};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "e2aceb3d-c28b-453e-8a3f-69d08b05d413": {
+        "id": "e2aceb3d-c28b-453e-8a3f-69d08b05d413",
+        "type": "condition",
+        "name": "Input Valid",
+        "position": {
+          "x": 940,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"e2aceb3d-c28b-453e-8a3f-69d08b05d413-if\",\"title\":\"if\",\"value\":\"<validateinput.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":37,\"activeSourceBlockId\":null},{\"id\":\"e2aceb3d-c28b-453e-8a3f-69d08b05d413-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "2d5f5bb5-d7d3-40ee-8091-30a7c4987eb0": {
+        "id": "2d5f5bb5-d7d3-40ee-8091-30a7c4987eb0",
+        "type": "response",
+        "name": "Invalid Input",
+        "position": {
+          "x": 1370,
+          "y": 80
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validateinput.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "422"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "26ba3d97-ea57-4afa-8e03-3b0c2944bd64",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "4bc4a618-301a-4749-b33b-ec186a255258": {
+        "id": "4bc4a618-301a-4749-b33b-ec186a255258",
+        "type": "api",
+        "name": "Get CI Summary",
+        "position": {
+          "x": 1800,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<validateinput.result.artifact_owner>/generic/<validateinput.result.artifact_package>/<validateinput.result.artifact_version_encoded>/ci-summary.json"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "b64ec837-1dcf-4ef4-9ad9-8c224c72fcd7",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "49b8555d-658b-4dbc-8c76-262a8c24b6ce",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "936c65b2-a479-4f10-9d2a-35f2359b5a86": {
+        "id": "936c65b2-a479-4f10-9d2a-35f2359b5a86",
+        "type": "api",
+        "name": "Get Findings",
+        "position": {
+          "x": 2230,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<validateinput.result.artifact_owner>/generic/<validateinput.result.artifact_package>/<validateinput.result.artifact_version_encoded>/findings.json"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "1c022518-41c8-4319-955e-ebea4175988e",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "427dddf4-68c5-4ba4-b035-9c76ca92c582",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "0e8caad4-eab7-48c1-851c-89c323a07daf": {
+        "id": "0e8caad4-eab7-48c1-851c-89c323a07daf",
+        "type": "api",
+        "name": "Get Pytest Log",
+        "position": {
+          "x": 2660,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<validateinput.result.artifact_owner>/generic/<validateinput.result.artifact_package>/<validateinput.result.artifact_version_encoded>/pytest.log"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "0f281c7b-4bd9-4365-ae0a-2a80bd7dfadb",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "14b9630f-b61b-4cc9-8490-e706abeefc2b",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "302b4d14-61a9-4c7c-8294-07929e02e6f0": {
+        "id": "302b4d14-61a9-4c7c-8294-07929e02e6f0",
+        "type": "api",
+        "name": "Get Development Contract",
+        "position": {
+          "x": 3090,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/packages/<validateinput.result.context_owner>/generic/<validateinput.result.context_package>/<validateinput.result.context_version_encoded>/development-contract.json"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "17f32c86-044f-47f3-8ed8-e36a78443432",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "fd95c364-87a6-4f95-b9fb-d3df06755420",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "00d6e1a6-882f-450a-bd1d-b71fd3301c0d": {
+        "id": "00d6e1a6-882f-450a-bd1d-b71fd3301c0d",
+        "type": "function",
+        "name": "Build CI Context",
+        "position": {
+          "x": 3520,
+          "y": 80
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "function parse(v){if(v&&typeof v==='object')return v;if(typeof v!=='string')return null;try{return JSON.parse(v);}catch(_){return null;}}\nconst errors=[];let summary=parse(<getcisummary.data>),findings=parse(<getfindings.data>),contract=parse(<getdevelopmentcontract.data>);const rawPytest=<getpytestlog.data>;const pytestLog=typeof rawPytest==='string'?rawPytest:String(rawPytest??'');if(summary?.data&&typeof summary.data==='object')summary=summary.data;if(contract?.data&&typeof contract.data==='object')contract=contract.data;\nif(Number(<getcisummary.status>)!==200||!summary)errors.push('ci-summary.json не получен');if(Number(<getfindings.status>)!==200||!Array.isArray(findings))errors.push('findings.json не получен');if(Number(<getpytestlog.status>)!==200||!pytestLog.trim())errors.push('pytest.log не получен');if(Number(<getdevelopmentcontract.status>)!==200||!contract)errors.push('development-contract.json не получен');if(contract&&(String(contract.owner)!==String(<validateinput.result.owner>)||String(contract.repo)!==String(<validateinput.result.repo>)))errors.push('Development contract относится к другому repository');\nconst approved=Array.isArray(contract?.repository_plan?.files)?contract.repository_plan.files.map(x=>String(typeof x==='string'?x:x?.path??'')).filter(Boolean):[];if(!approved.length)errors.push('Нет approved repository paths');\nconst pytestStage=Array.isArray(summary?.stages)?summary.stages.find(x=>String(x?.name??'').toLowerCase()==='pytest'):null;const noTestsCollected=Number(pytestStage?.exit_code)===5||/\\bno tests ran\\b|collected\\s+0\\s+items?/i.test(pytestLog);const diagnosticText=`${JSON.stringify(summary??{})}\\n${JSON.stringify(findings??[])}\\n${pytestLog}`;const transientFailure=!noTestsCollected&&/(connection (?:reset|refused)|timed?\\s*out|temporary failure|service unavailable|runner unavailable|network is unreachable|i\\/o timeout|tls handshake timeout|http\\s+5\\d\\d)/i.test(diagnosticText);\nreturn {valid:errors.length===0,errors,summary,findings:Array.isArray(findings)?findings:[],pytest_log:pytestLog.slice(-20000),contract,approved_paths:[...new Set(approved)],passed:summary?.quality_gate?.passed===true,no_tests_collected:noTestsCollected,transient_failure:transientFailure};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "4ec95912-f51f-4f54-8232-dbad263b425f": {
+        "id": "4ec95912-f51f-4f54-8232-dbad263b425f",
+        "type": "condition",
+        "name": "CI Context Valid",
+        "position": {
+          "x": 3950,
+          "y": 80
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"4ec95912-f51f-4f54-8232-dbad263b425f-if\",\"title\":\"if\",\"value\":\"<buildcicontext.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":38,\"activeSourceBlockId\":null},{\"id\":\"4ec95912-f51f-4f54-8232-dbad263b425f-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "710f087a-ff2f-4a77-b7b2-bd933b55ab07": {
+        "id": "710f087a-ff2f-4a77-b7b2-bd933b55ab07",
+        "type": "response",
+        "name": "Invalid CI Context",
+        "position": {
+          "x": 80,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<buildcicontext.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "424"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "9e235fe3-5247-49a4-989f-a7b2b4518a57",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "c3c10a02-d8d1-49cc-8b66-7294cd11a556": {
+        "id": "c3c10a02-d8d1-49cc-8b66-7294cd11a556",
+        "type": "condition",
+        "name": "CI Passed",
+        "position": {
+          "x": 510,
+          "y": 500
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"c3c10a02-d8d1-49cc-8b66-7294cd11a556-if\",\"title\":\"if\",\"value\":\"<buildcicontext.result.passed> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":39,\"activeSourceBlockId\":null},{\"id\":\"c3c10a02-d8d1-49cc-8b66-7294cd11a556-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "e8a8faff-407b-4450-9683-53fc9e642ab3": {
+        "id": "e8a8faff-407b-4450-9683-53fc9e642ab3",
+        "type": "response",
+        "name": "CI Success",
+        "position": {
+          "x": 940,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<buildcicontext.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "433c1800-26c9-4d93-baf1-3772c6c23194",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "cd432c75-578c-4e0e-aab0-dc76b67ca0eb": {
+        "id": "cd432c75-578c-4e0e-aab0-dc76b67ca0eb",
+        "type": "agent",
+        "name": "CI Result Analyst",
+        "position": {
+          "x": 1370,
+          "y": 500
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты анализируешь упавший CI демонстрационного FastAPI-проекта. Верни только JSON\nResponse Format. Выбери repair только для локальной ошибки в application-owned\nкоде, тестах, зависимостях или документации. Для ошибки runner, Docker, Gitea,\nсекретов, сети, .gitea/** или ci/** выбери manual. Если pytest.log точно указывает на локальный\nдефект в approved application-owned файле, выбери repair. `no tests ran`,\n`collected 0 items` и pytest exit code 5 всегда означают repair тестовых файлов,\nа не CI-инфраструктуры: выбери repair и укажи approved `tests/test_*.py`.\nУкажи не более пяти файлов."
+              },
+              {
+                "role": "user",
+                "content": "CI SUMMARY: <buildcicontext.result.summary>\nFINDINGS: <buildcicontext.result.findings>\nPYTEST LOG: <buildcicontext.result.pytest_log>\nNO TESTS COLLECTED: <buildcicontext.result.no_tests_collected>\nTRANSIENT FAILURE: <buildcicontext.result.transient_failure>\nAPPROVED PATHS: <buildcicontext.result.approved_paths>\nATTEMPT: <validateinput.result.attempt> из 5"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "4096"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_ci_analysis\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"decision\": {\n        \"type\": \"string\",\n        \"enum\": [\n          \"repair\",\n          \"manual\"\n        ]\n      },\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2500\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"maxItems\": 5,\n        \"items\": {\n          \"type\": \"string\",\n          \"maxLength\": 200\n        }\n      },\n      \"instructions\": {\n        \"type\": \"string\",\n        \"maxLength\": 4000\n      }\n    },\n    \"required\": [\n      \"decision\",\n      \"summary\",\n      \"files\",\n      \"instructions\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d": {
+        "id": "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d",
+        "type": "condition",
+        "name": "Repair Allowed",
+        "position": {
+          "x": 1800,
+          "y": 500
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-if\",\"title\":\"if\",\"value\":\"(String(<ciresultanalyst.decision> ?? '') === 'repair' || <buildcicontext.result.no_tests_collected> === true) && Number(<validateinput.result.attempt>) <= 5\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":157,\"activeSourceBlockId\":null},{\"id\":\"a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-else-if-1\",\"title\":\"else if\",\"value\":\"<buildcicontext.result.transient_failure> === true && Number(<validateinput.result.attempt>) < 5\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":96,\"activeSourceBlockId\":null},{\"id\":\"a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "053f3282-3898-4fa5-a58a-0b2fe37cdd5d": {
+        "id": "053f3282-3898-4fa5-a58a-0b2fe37cdd5d",
+        "type": "api",
+        "name": "Retry CI Without Changes",
+        "position": {
+          "x": 2230,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateinput.result.owner>/<validateinput.result.repo>/actions/workflows/pipeline.yml/dispatches"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\"ref\":\"<validateinput.result.branch>\",\"inputs\":{\"pr_number\":\"<validateinput.result.pr_number>\",\"context_version\":\"<validateinput.result.context_version>\",\"repair_attempt\":\"<validateinput.result.attempt>\",\"run_id\":\"<validateinput.result.run_id>\"}}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "d31bea39-706e-46de-8ddb-30a052149dad",
+                "cells": {
+                  "Key": "return_run_details",
+                  "Value": "true"
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "619342ee-39e9-4c66-9e78-2bc2cd19e256",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "89ee862b-49d4-4497-9f87-e26ee9bde780",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "3dd6cc98-c419-4064-8194-d70a0fa0b5db",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "d516842c-e936-4c1a-a0ce-40b21b012ff2": {
+        "id": "d516842c-e936-4c1a-a0ce-40b21b012ff2",
+        "type": "function",
+        "name": "Check Autonomous Retry",
+        "position": {
+          "x": 2660,
+          "y": 500
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status = Number(<retryciwithoutchanges.status>);\nconst data = <retryciwithoutchanges.data>;\nif (![200, 204].includes(status)) {\n  throw new Error(`Повторный CI не поставлен в очередь: HTTP ${status}`);\n}\nconst runId = status === 200\n  ? Number(data?.id ?? data?.workflow_run_id ?? 0)\n  : 0;\nif (status === 200 && (!Number.isInteger(runId) || runId < 1)) {\n  throw new Error('Gitea вернула HTTP 200 без идентификатора повторного CI run');\n}\nreturn {\n  valid: true,\n  status,\n  workflow_run_id: runId || null,\n  run_url: String(data?.html_url ?? data?.run_url ?? '')\n};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "457c697e-5934-4f68-baf2-76c2160225c0": {
+        "id": "457c697e-5934-4f68-baf2-76c2160225c0",
+        "type": "response",
+        "name": "Autonomous Retry Scheduled",
+        "position": {
+          "x": 3090,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<checkautonomousretry.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "a87c0576-0471-4934-89cf-f2d0779e4382",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "24a178e5-0be6-4e0f-b27b-b14808a18df4": {
+        "id": "24a178e5-0be6-4e0f-b27b-b14808a18df4",
+        "type": "response",
+        "name": "Autonomous Limit Reached",
+        "position": {
+          "x": 3520,
+          "y": 500
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<ciresultanalyst>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "b6def35d-da00-4196-95a5-5819b3f97c67",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7242751c-6034-459d-99ef-fc13f7821475": {
+        "id": "7242751c-6034-459d-99ef-fc13f7821475",
+        "type": "api",
+        "name": "Get Branch",
+        "position": {
+          "x": 3950,
+          "y": 500
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateinput.result.owner>/<validateinput.result.repo>/branches/<validateinput.result.branch_encoded>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "815b5ce6-f4d3-415c-8aaa-06be33aa3e3a",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "f18f3aa9-7ef8-4a14-8454-7c09faf9335d",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "b77cd3fc-da35-45ba-a4cd-91456d047bf5",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "c68c9394-a259-4f23-96d1-c41abe0003ce",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "2"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "934255d9-8b96-4404-b310-457196ef475b": {
+        "id": "934255d9-8b96-4404-b310-457196ef475b",
+        "type": "function",
+        "name": "Check Branch Head",
+        "position": {
+          "x": 80,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status=Number(<getbranch.status>),actual=String(<getbranch.data.commit.id>??'').toLowerCase(),expected=String(<validateinput.result.commit_sha>??'').toLowerCase();return {valid:status===200&&actual===expected,status,actual,expected};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "a5701475-e729-4a00-bc22-3534085dd887": {
+        "id": "a5701475-e729-4a00-bc22-3534085dd887",
+        "type": "condition",
+        "name": "Branch Fresh",
+        "position": {
+          "x": 510,
+          "y": 920
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"a5701475-e729-4a00-bc22-3534085dd887-if\",\"title\":\"if\",\"value\":\"<checkbranchhead.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":39,\"activeSourceBlockId\":null},{\"id\":\"a5701475-e729-4a00-bc22-3534085dd887-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "488360d8-c4c8-41ce-8a75-e776f3501966": {
+        "id": "488360d8-c4c8-41ce-8a75-e776f3501966",
+        "type": "response",
+        "name": "Stale Branch",
+        "position": {
+          "x": 940,
+          "y": 920
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<checkbranchhead.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "409"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "5ba7b56b-deaa-4ee5-9a35-80ac5bb0c88c",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "fbd81cb2-bbbf-4a30-86a2-fad61986215b": {
+        "id": "fbd81cb2-bbbf-4a30-86a2-fad61986215b",
+        "type": "function",
+        "name": "Select Revision Paths",
+        "position": {
+          "x": 1370,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const approved=Array.isArray(<buildcicontext.result.approved_paths>)?<buildcicontext.result.approved_paths>:[];const approvedSet=new Set(approved);const requested=Array.isArray(<ciresultanalyst.files>)?<ciresultanalyst.files>:[];const paths=[];const seen=new Set();const protectedPath=p=>/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(p)||/^\\.env/i.test(p);const relevant=p=>/\\.py$/i.test(p)||/^requirements.*\\.txt$/i.test(p);\nfunction add(raw){if(paths.length>=10)return;const path=String(raw??'').trim().replace(/^\\.\\//,'');if(approvedSet.has(path)&&!protectedPath(path)&&!seen.has(path)){seen.add(path);paths.push({path,encoded_path:path.split('/').map(encodeURIComponent).join('/')});}}\nconst noTestsCollected=<buildcicontext.result.no_tests_collected>===true;const testPath=p=>/^tests\\/(?:test_.*|.*_test)\\.py$/i.test(String(p??''));\nif(noTestsCollected){for(const path of approved){if(testPath(path))add(path);}}for(const raw of requested)add(raw);for(const path of approved){if(relevant(path))add(path);}\nconst hasTestPath=paths.some(x=>testPath(x.path));const errors=[];if(!paths.length)errors.push('Не выбраны безопасные файлы');if(noTestsCollected&&!hasTestPath)errors.push('В approved plan нет доступного pytest-модуля tests/test_*.py');\nreturn {valid:errors.length===0&&paths.length<=10,errors,paths:paths.slice(0,10),no_tests_collected:noTestsCollected};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "641365c4-9c22-40d7-8cbb-70237d204af8": {
+        "id": "641365c4-9c22-40d7-8cbb-70237d204af8",
+        "type": "condition",
+        "name": "Revision Scope Valid",
+        "position": {
+          "x": 1800,
+          "y": 920
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"641365c4-9c22-40d7-8cbb-70237d204af8-if\",\"title\":\"if\",\"value\":\"<selectrevisionpaths.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":43,\"activeSourceBlockId\":null},{\"id\":\"641365c4-9c22-40d7-8cbb-70237d204af8-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "df186222-92f3-4b5c-a2f2-e0bab568a779": {
+        "id": "df186222-92f3-4b5c-a2f2-e0bab568a779",
+        "type": "response",
+        "name": "Scope Needs Human",
+        "position": {
+          "x": 2230,
+          "y": 920
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<selectrevisionpaths.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "d6cce759-1aff-445a-8c28-74067c6331d3",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "6df6ccde-6065-4178-8a7f-332342869c4d": {
+        "id": "6df6ccde-6065-4178-8a7f-332342869c4d",
+        "type": "loop",
+        "name": "Read Revision Files",
+        "position": {
+          "x": 2660,
+          "y": 920
+        },
+        "subBlocks": {},
+        "outputs": {},
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "width": 500,
+          "height": 300,
+          "collection": "<selectrevisionpaths.result.paths>",
+          "count": 10,
+          "loopType": "forEach",
+          "whileCondition": "",
+          "doWhileCondition": "",
+          "type": "subflowNode"
+        },
+        "locked": false
+      },
+      "46db0599-bce4-4f5e-9d96-5fa809fc28d6": {
+        "id": "46db0599-bce4-4f5e-9d96-5fa809fc28d6",
+        "type": "api",
+        "name": "Read Revision File",
+        "position": {
+          "x": 120,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateinput.result.owner>/<validateinput.result.repo>/contents/<readrevisionfiles.currentItem.encoded_path>?ref=<validateinput.result.branch_encoded>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": null
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "GET"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": []
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "665ed7ef-f223-4f44-84cb-4395f72a9519",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "2ecb5bb6-8bf4-4e62-9547-3b87db60b8b6",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": "1000"
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": "5000"
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 230,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "parentId": "6df6ccde-6065-4178-8a7f-332342869c4d",
+          "extent": "parent"
+        },
+        "locked": false
+      },
+      "7210ade5-ac5b-4133-b053-ed8c1339a7e3": {
+        "id": "7210ade5-ac5b-4133-b053-ed8c1339a7e3",
+        "type": "function",
+        "name": "Build Revision Context",
+        "position": {
+          "x": 3520,
+          "y": 920
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const requested = <selectrevisionpaths.result.paths>;\nconst iterations = <readrevisionfiles.results>;\nconst files = [];\nconst errors = [];\nlet totalChars = 0;\n\nfunction decodeUtf8(bytes) {\n  let result = '';\n  for (let i = 0; i < bytes.length;) {\n    const first = bytes[i++];\n    if (first <= 0x7f) { result += String.fromCharCode(first); continue; }\n    let codePoint, count, minimum;\n    if ((first & 0xe0) === 0xc0) { codePoint = first & 0x1f; count = 1; minimum = 0x80; }\n    else if ((first & 0xf0) === 0xe0) { codePoint = first & 0x0f; count = 2; minimum = 0x800; }\n    else if ((first & 0xf8) === 0xf0) { codePoint = first & 0x07; count = 3; minimum = 0x10000; }\n    else { result += '\\uFFFD'; continue; }\n    if (i + count > bytes.length) { result += '\\uFFFD'; break; }\n    let valid = true;\n    for (let j = 0; j < count; j++) {\n      const next = bytes[i];\n      if ((next & 0xc0) !== 0x80) { valid = false; break; }\n      i++; codePoint = (codePoint << 6) | (next & 0x3f);\n    }\n    if (!valid || codePoint < minimum || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {\n      result += '\\uFFFD'; continue;\n    }\n    if (codePoint <= 0xffff) result += String.fromCharCode(codePoint);\n    else {\n      const adjusted = codePoint - 0x10000;\n      result += String.fromCharCode(0xd800 + (adjusted >> 10), 0xdc00 + (adjusted & 0x3ff));\n    }\n  }\n  return result;\n}\n\nfunction decodeBase64Utf8(value) {\n  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';\n  let encoded = String(value ?? '').replace(/\\s/g, '');\n  if (!encoded) return '';\n  const paddingAt = encoded.indexOf('=');\n  if (paddingAt !== -1) encoded = encoded.slice(0, paddingAt);\n  if (/[^A-Za-z0-9+/]/.test(encoded) || encoded.length % 4 === 1) throw new Error('invalid Base64');\n  const bytes = [];\n  for (let i = 0; i < encoded.length; i += 4) {\n    const a = alphabet.indexOf(encoded[i]); const b = alphabet.indexOf(encoded[i + 1]);\n    const c = i + 2 < encoded.length ? alphabet.indexOf(encoded[i + 2]) : -1;\n    const d = i + 3 < encoded.length ? alphabet.indexOf(encoded[i + 3]) : -1;\n    if (a < 0 || b < 0) throw new Error('invalid Base64 quartet');\n    bytes.push((a << 2) | (b >> 4));\n    if (c >= 0) bytes.push(((b & 15) << 4) | (c >> 2));\n    if (d >= 0) bytes.push(((c & 3) << 6) | d);\n  }\n  return decodeUtf8(bytes);\n}\n\nfor (let i = 0; i < (Array.isArray(requested) ? requested.length : 0); i++) {\n  const path = String(requested[i]?.path ?? '');\n  const outputs = Array.isArray(iterations?.[i]) ? iterations[i] : [];\n  const apiOutput = outputs.find((item) => item && Object.prototype.hasOwnProperty.call(item, 'data'));\n  const data = apiOutput?.data;\n  if (!data || data.type !== 'file' || !data.sha) { errors.push(`Не удалось прочитать ${path}`); continue; }\n  try {\n    const content = decodeBase64Utf8(data.content);\n    if (content.length > 20000) { errors.push(`Файл слишком большой: ${path}`); continue; }\n    totalChars += content.length;\n    files.push({path, sha: String(data.sha), content});\n  } catch (error) { errors.push(`Ошибка декодирования ${path}: ${String(error?.message ?? error)}`); }\n}\nif (totalChars > 60000) errors.push('Суммарный контекст превышает 60000 символов');\n\nreturn {\n  valid: errors.length === 0 && files.length === requested.length,\n  status: errors.length === 0 ? 'repository_context_valid' : 'repository_context_invalid',\n  errors,\n  files,\n  count: files.length,\n  total_chars: totalChars\n};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "7ddba43d-d1a7-492a-bec8-75c5c9c56286": {
+        "id": "7ddba43d-d1a7-492a-bec8-75c5c9c56286",
+        "type": "condition",
+        "name": "Revision Context Valid",
+        "position": {
+          "x": 3950,
+          "y": 920
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"7ddba43d-d1a7-492a-bec8-75c5c9c56286-if\",\"title\":\"if\",\"value\":\"<buildrevisioncontext.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":44,\"activeSourceBlockId\":null},{\"id\":\"7ddba43d-d1a7-492a-bec8-75c5c9c56286-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "c2201b85-511d-4c23-b45d-27e11aa72dd6": {
+        "id": "c2201b85-511d-4c23-b45d-27e11aa72dd6",
+        "type": "response",
+        "name": "Repository Context Error",
+        "position": {
+          "x": 80,
+          "y": 1340
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<buildrevisioncontext.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "424"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "a21c9a31-e305-4249-9303-ce0d15705058",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "1a14ebbd-6222-4450-8057-8f0410dc37d7": {
+        "id": "1a14ebbd-6222-4450-8057-8f0410dc37d7",
+        "type": "agent",
+        "name": "Revision Developer",
+        "position": {
+          "x": 510,
+          "y": 1340
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты исправляешь один упавший CI демонстрационного FastAPI-проекта. Верни только\nJSON Response Format. Меняй только переданные файлы, возвращай их полное новое\nсодержимое. Исправь указанную причину CI, сохрани утверждённое поведение, не\nдобавляй секреты, TODO и изменения platform-owned файлов. Ищи корневую причину во всех переданных связанных\nфайлах. Не создавай параллельное состояние или singleton, если приложение фактически использует другой экземпляр.\nПредпочитай исправление application-кода; меняй тест только если он явно противоречит requirements.\nНикогда не заменяй тестовый модуль только fixtures, imports или helper-функциями.\nСохраняй все существующие функции `def test_*`, если они не противоречат требованиям.\nЕсли NO TESTS COLLECTED=true, верни минимум один approved `tests/test_*.py` с\nобнаруживаемыми pytest функциями `def test_*`; исправь helper-код, не удаляя тестовые сценарии."
+              },
+              {
+                "role": "user",
+                "content": "CI SUMMARY: <buildcicontext.result.summary>\nFINDINGS: <buildcicontext.result.findings>\nPYTEST LOG: <buildcicontext.result.pytest_log>\nNO TESTS COLLECTED: <buildcicontext.result.no_tests_collected>\nINSTRUCTIONS: <ciresultanalyst.instructions>\nREQUIREMENTS: <buildcicontext.result.contract.requirements>\nREPOSITORY PLAN: <buildcicontext.result.contract.repository_plan>\nCURRENT FILES: <buildrevisioncontext.result.files>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "8192"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_revision\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"minItems\": 1,\n        \"maxItems\": 5,\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 20000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "44dce98f-4af3-4241-9596-565119302483": {
+        "id": "44dce98f-4af3-4241-9596-565119302483",
+        "type": "function",
+        "name": "Validate Revision",
+        "position": {
+          "x": 940,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const returned=Array.isArray(<revisiondeveloper.files>)?<revisiondeveloper.files>:[];const current=Array.isArray(<buildrevisioncontext.result.files>)?<buildrevisioncontext.result.files>:[];const allowed=new Map(current.map(x=>[String(x.path),x]));const errors=[];const files=[];const seen=new Set();let total=0;const noTestsCollected=<buildcicontext.result.no_tests_collected>===true;const testPath=p=>/^tests\\/(?:test_.*|.*_test)\\.py$/i.test(String(p??''));const countTests=text=>(String(text??'').match(/(?:^|\\n)\\s*(?:async\\s+)?def\\s+test_[A-Za-z0-9_]*\\s*\\(/g)||[]).length;let returnedTestModule=false;\nfor(const item of returned){const path=String(item?.path??'').trim().replace(/^\\.\\//,'');const content=String(item?.content??'');if(seen.has(path))errors.push(`Дубликат: ${path}`);if(!allowed.has(path))errors.push(`Файл не разрешён: ${path}`);if(/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(path)||/^\\.env/i.test(path))errors.push(`Защищённый path: ${path}`);if(!content)errors.push(`Пустой content: ${path}`);if(content.length>20000)errors.push(`Файл слишком большой: ${path}`);if(allowed.has(path)&&content===allowed.get(path).content)errors.push(`Файл не изменён: ${path}`);if(/-----BEGIN .*PRIVATE KEY-----|(?:password|token|api[_-]?key)\\s*[:=]\\s*['\\\"][^'\\\"]{8,}/i.test(content))errors.push(`Возможный секрет: ${path}`);if(testPath(path)){returnedTestModule=true;const oldCount=countTests(allowed.get(path)?.content);const newCount=countTests(content);if(newCount<1)errors.push(`Pytest не обнаружит тесты в ${path}: нужны функции def test_*`);if(oldCount>0&&newCount<oldCount)errors.push(`Исправление удаляет тестовые функции из ${path}: было ${oldCount}, стало ${newCount}`);}seen.add(path);total+=content.length;files.push({path,content,sha:String(allowed.get(path)?.sha??''),encoded_path:path.split('/').map(encodeURIComponent).join('/')});}\nif(noTestsCollected&&!returnedTestModule)errors.push('При pytest exit code 5 нужно вернуть исправленный tests/test_*.py');if(files.length<1||files.length>5)errors.push('Нужно 1–5 исправленных файлов');if(total>40000)errors.push('Исправления превышают 40000 символов');return {valid:errors.length===0,errors,files,summary:String(<revisiondeveloper.summary>??''),no_tests_collected:noTestsCollected};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "2a4fe5f2-e310-4e01-b3c5-9379e327f627": {
+        "id": "2a4fe5f2-e310-4e01-b3c5-9379e327f627",
+        "type": "agent",
+        "name": "Revision Safeguard",
+        "position": {
+          "x": 1370,
+          "y": 1340
+        },
+        "subBlocks": {
+          "files": {
+            "id": "files",
+            "type": "short-input",
+            "value": null
+          },
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "qwen3-coder-next:latest"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": null
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "system",
+                "content": "Ты выполняешь обязательный контрольный проход исправления упавшего CI FastAPI-проекта.\nВерни только JSON Response Format с полным содержимым изменяемых файлов.\nОпирайся на CURRENT FILES и требования. Если DRAFT VALID=false, устрани каждую\nошибку DRAFT ERRORS. Если черновик уже допустим, сохрани его полезные изменения.\nНе выходи за пути из CURRENT FILES и не изменяй platform-owned файлы.\nНикогда не заменяй тестовый модуль только imports, fixtures или helper-функциями.\nСохрани все существующие `def test_*`, если они не противоречат требованиям.\nПри NO TESTS COLLECTED=true финальный `tests/test_*.py` обязан содержать\nобнаруживаемые pytest-функции `def test_*`. Не заявляй, что CI уже прошёл."
+              },
+              {
+                "role": "user",
+                "content": "CI SUMMARY: <buildcicontext.result.summary>\nPYTEST LOG: <buildcicontext.result.pytest_log>\nNO TESTS COLLECTED: <buildcicontext.result.no_tests_collected>\nREQUIREMENTS: <buildcicontext.result.contract.requirements>\nCURRENT FILES: <buildrevisioncontext.result.files>\nDRAFT FILES: <revisiondeveloper.files>\nDRAFT VALID: <validaterevision.result.valid>\nDRAFT ERRORS: <validaterevision.result.errors>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": "8192"
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": null
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.2
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"demo_revision\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"maxLength\": 2000\n      },\n      \"files\": {\n        \"type\": \"array\",\n        \"minItems\": 1,\n        \"maxItems\": 5,\n        \"items\": {\n          \"type\": \"object\",\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"path\": {\n              \"type\": \"string\",\n              \"maxLength\": 200\n            },\n            \"content\": {\n              \"type\": \"string\",\n              \"maxLength\": 20000\n            }\n          },\n          \"required\": [\n            \"path\",\n            \"content\"\n          ]\n        }\n      }\n    },\n    \"required\": [\n      \"summary\",\n      \"files\"\n    ]\n  }\n}"
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "attachmentFiles": {
+            "id": "attachmentFiles",
+            "type": "file-upload",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "previousInteractionId": {
+            "id": "previousInteractionId",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexManualCredential": {
+            "id": "vertexManualCredential",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "canonicalModes": {
+            "files": "basic",
+            "vertexCredential": "basic"
+          }
+        },
+        "locked": false
+      },
+      "a2e1309e-8e75-4b70-a66b-4ff594199c53": {
+        "id": "a2e1309e-8e75-4b70-a66b-4ff594199c53",
+        "type": "function",
+        "name": "Validate Final Revision",
+        "position": {
+          "x": 1800,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const returned=Array.isArray(<revisionsafeguard.files>)?<revisionsafeguard.files>:[];const current=Array.isArray(<buildrevisioncontext.result.files>)?<buildrevisioncontext.result.files>:[];const allowed=new Map(current.map(x=>[String(x.path),x]));const errors=[];const files=[];const seen=new Set();let total=0;const noTestsCollected=<buildcicontext.result.no_tests_collected>===true;const testPath=p=>/^tests\\/(?:test_.*|.*_test)\\.py$/i.test(String(p??''));const countTests=text=>(String(text??'').match(/(?:^|\\n)\\s*(?:async\\s+)?def\\s+test_[A-Za-z0-9_]*\\s*\\(/g)||[]).length;let returnedTestModule=false;\nfor(const item of returned){const path=String(item?.path??'').trim().replace(/^\\.\\//,'');const content=String(item?.content??'');if(seen.has(path))errors.push(`Дубликат: ${path}`);if(!allowed.has(path))errors.push(`Файл не разрешён: ${path}`);if(/^(\\.git|\\.gitea|\\.github|ci|k8s|secrets)\\//i.test(path)||/^\\.env/i.test(path))errors.push(`Защищённый path: ${path}`);if(!content)errors.push(`Пустой content: ${path}`);if(content.length>20000)errors.push(`Файл слишком большой: ${path}`);if(allowed.has(path)&&content===allowed.get(path).content)errors.push(`Файл не изменён: ${path}`);if(/-----BEGIN .*PRIVATE KEY-----|(?:password|token|api[_-]?key)\\s*[:=]\\s*['\\\"][^'\\\"]{8,}/i.test(content))errors.push(`Возможный секрет: ${path}`);if(testPath(path)){returnedTestModule=true;const oldCount=countTests(allowed.get(path)?.content);const newCount=countTests(content);if(newCount<1)errors.push(`Pytest не обнаружит тесты в ${path}: нужны функции def test_*`);if(oldCount>0&&newCount<oldCount)errors.push(`Исправление удаляет тестовые функции из ${path}: было ${oldCount}, стало ${newCount}`);}seen.add(path);total+=content.length;files.push({path,content,sha:String(allowed.get(path)?.sha??''),encoded_path:path.split('/').map(encodeURIComponent).join('/')});}\nif(noTestsCollected&&!returnedTestModule)errors.push('При pytest exit code 5 нужно вернуть исправленный tests/test_*.py');if(files.length<1||files.length>5)errors.push('Нужно 1–5 исправленных файлов');if(total>40000)errors.push('Исправления превышают 40000 символов');return {valid:errors.length===0,errors,files,summary:String(<revisionsafeguard.summary>??''),no_tests_collected:noTestsCollected};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "9dc819dd-53e9-4924-9b08-c191f7fa4c40": {
+        "id": "9dc819dd-53e9-4924-9b08-c191f7fa4c40",
+        "type": "condition",
+        "name": "Revision Valid",
+        "position": {
+          "x": 2230,
+          "y": 1340
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"9dc819dd-53e9-4924-9b08-c191f7fa4c40-if\",\"title\":\"if\",\"value\":\"<validatefinalrevision.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":45,\"activeSourceBlockId\":null},{\"id\":\"9dc819dd-53e9-4924-9b08-c191f7fa4c40-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "2adb7587-3104-4a98-b1b8-b70acc03dc0d": {
+        "id": "2adb7587-3104-4a98-b1b8-b70acc03dc0d",
+        "type": "response",
+        "name": "Invalid Revision",
+        "position": {
+          "x": 2660,
+          "y": 1340
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validaterevision.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "02c146d1-01cf-405f-9634-4a72ce49b945",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "63cea214-2e41-4277-9245-50e66465132d": {
+        "id": "63cea214-2e41-4277-9245-50e66465132d",
+        "type": "function",
+        "name": "Prepare Revision",
+        "position": {
+          "x": 3090,
+          "y": 1340
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const files = <validatefinalrevision.result.files>;\n\nfunction utf8ToBase64(value) {\n  const text = String(value ?? ''); const bytes = [];\n  for (let i = 0; i < text.length; i++) {\n    let cp = text.charCodeAt(i);\n    if (cp >= 0xd800 && cp <= 0xdbff) {\n      const next = text.charCodeAt(i + 1);\n      if (next >= 0xdc00 && next <= 0xdfff) { cp = 0x10000 + ((cp - 0xd800) << 10) + (next - 0xdc00); i++; }\n      else cp = 0xfffd;\n    } else if (cp >= 0xdc00 && cp <= 0xdfff) cp = 0xfffd;\n    if (cp <= 0x7f) bytes.push(cp);\n    else if (cp <= 0x7ff) bytes.push(0xc0 | (cp >> 6), 0x80 | (cp & 0x3f));\n    else if (cp <= 0xffff) bytes.push(0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));\n    else bytes.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));\n  }\n  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'; let result = '';\n  for (let i = 0; i < bytes.length; i += 3) {\n    const a = bytes[i], hasB = i + 1 < bytes.length, hasC = i + 2 < bytes.length;\n    const b = hasB ? bytes[i + 1] : 0, c = hasC ? bytes[i + 2] : 0;\n    result += alphabet[a >> 2]; result += alphabet[((a & 3) << 4) | (b >> 4)];\n    result += hasB ? alphabet[((b & 15) << 2) | (c >> 6)] : '=';\n    result += hasC ? alphabet[c & 63] : '=';\n  }\n  return result;\n}\n\nconst updateFiles = files.map((item) => ({...item, content_base64: utf8ToBase64(item.content)}));\nreturn {\n  status: <validateinput.result.dry_run> ? 'dry_run_ready' : 'write_ready',\n  dry_run: <validateinput.result.dry_run>,\n  update_files: updateFiles,\n  file_count: updateFiles.length,\n  summary: <validatefinalrevision.result.summary>,\n  attempt: <validateinput.result.attempt>,\n  next_attempt: Number(<validateinput.result.attempt>),\n  protected_findings: []\n};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "20cf4652-2f57-49cc-9ff7-a4897769c0e6": {
+        "id": "20cf4652-2f57-49cc-9ff7-a4897769c0e6",
+        "type": "condition",
+        "name": "Dry Run",
+        "position": {
+          "x": 3520,
+          "y": 1340
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"20cf4652-2f57-49cc-9ff7-a4897769c0e6-if\",\"title\":\"if\",\"value\":\"<validateinput.result.dry_run> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":39,\"activeSourceBlockId\":null},{\"id\":\"20cf4652-2f57-49cc-9ff7-a4897769c0e6-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "fed10f51-6034-4c34-9189-a0a2d28c51a8": {
+        "id": "fed10f51-6034-4c34-9189-a0a2d28c51a8",
+        "type": "response",
+        "name": "Dry Run Result",
+        "position": {
+          "x": 3950,
+          "y": 1340
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<validatefinalrevision.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "6559cf98-df47-4d36-8708-91e4f1e78b01",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "3714b6d1-7be0-4850-b2b8-5439f610f538": {
+        "id": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+        "type": "loop",
+        "name": "Write Revision Files",
+        "position": {
+          "x": 80,
+          "y": 1760
+        },
+        "subBlocks": {},
+        "outputs": {},
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {
+          "width": 500,
+          "height": 300,
+          "collection": "<preparerevision.result.update_files>",
+          "count": 5,
+          "loopType": "forEach",
+          "whileCondition": "",
+          "doWhileCondition": "",
+          "type": "subflowNode"
+        },
+        "locked": false
+      },
+      "d05f5e17-6713-4027-b574-1daa7a352d46": {
+        "id": "d05f5e17-6713-4027-b574-1daa7a352d46",
+        "type": "api",
+        "name": "Update Revision File",
+        "position": {
+          "x": 120,
+          "y": 80
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateinput.result.owner>/<validateinput.result.repo>/contents/<writerevisionfiles.currentItem.encoded_path>"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\n  \"branch\": \"<validateinput.result.branch>\",\n  \"message\": \"fix(ai): revise <writerevisionfiles.currentItem.path> [attempt <validateinput.result.attempt>]\",\n  \"content\": \"<writerevisionfiles.currentItem.content_base64>\",\n  \"sha\": \"<writerevisionfiles.currentItem.sha>\",\n  \"signoff\": false\n}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "PUT"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "e3006218-23e8-48a7-801e-08e4f49a9108",
+                "cells": {
+                  "Key": "",
+                  "Value": ""
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "53781897-22a8-4c3f-a625-c4ba9f869fdb",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "9f12549d-4908-49d9-a479-5ac041feaaa4",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "ca1ae2bc-eedc-49d1-9f71-1444719a5c47",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 230,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {
+          "parentId": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+          "extent": "parent"
+        },
+        "locked": false
+      },
+      "e96c4aa2-c54f-4c43-ba3f-ace5895ffbbe": {
+        "id": "e96c4aa2-c54f-4c43-ba3f-ace5895ffbbe",
+        "type": "function",
+        "name": "Verify Revision Writes",
+        "position": {
+          "x": 940,
+          "y": 1760
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const expected = <preparerevision.result.update_files>;\nconst iterations = <writerevisionfiles.results>;\nconst commits = [];\nconst errors = [];\n\nfor (let i = 0; i < expected.length; i++) {\n  const outputs = Array.isArray(iterations?.[i]) ? iterations[i] : [];\n  const apiOutput = outputs.find((item) => item && Object.prototype.hasOwnProperty.call(item, 'data'));\n  const status = Number(apiOutput?.status ?? 0);\n  const data = apiOutput?.data;\n  if (status !== 200 || !data?.content?.sha || !data?.commit?.sha) {\n    errors.push(`Запись не подтверждена для ${expected[i].path}: HTTP ${status}`);\n    continue;\n  }\n  commits.push({path: expected[i].path, file_sha: String(data.content.sha), commit_sha: String(data.commit.sha)});\n}\n\nreturn {\n  valid: errors.length === 0 && commits.length === expected.length && expected.length > 0,\n  status: errors.length === 0 && commits.length === expected.length ? 'revised' : 'partial_write',\n  errors,\n  owner: <validateinput.result.owner>,\n  repo: <validateinput.result.repo>,\n  branch: <validateinput.result.branch>,\n  pr_number: <validateinput.result.pr_number>,\n  artifact_version: <validateinput.result.artifact_version>,\n  attempt: <validateinput.result.attempt>,\n  next_attempt: Number(<validateinput.result.attempt>),\n  commits,\n  files_written: commits.map((item) => item.path),\n  protected_findings: [],\n  message: 'Ветка PR обновлена. Следующим блоком Workflow 04 будет явно запущен повторный CI.'\n};\n"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Return value from the executed JavaScript function"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Console log output and debug messages from function execution"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "cbb7d8e7-0e03-41d0-8386-74187d770cce": {
+        "id": "cbb7d8e7-0e03-41d0-8386-74187d770cce",
+        "type": "condition",
+        "name": "Writes Complete",
+        "position": {
+          "x": 1370,
+          "y": 1760
+        },
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"cbb7d8e7-0e03-41d0-8386-74187d770cce-if\",\"title\":\"if\",\"value\":\"<verifyrevisionwrites.result.valid> === true\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":44,\"activeSourceBlockId\":null},{\"id\":\"cbb7d8e7-0e03-41d0-8386-74187d770cce-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"searchTerm\":\"\",\"showEnvVars\":false,\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "selectedPath": {
+            "type": "json",
+            "description": "Selected execution path"
+          },
+          "selectedOption": {
+            "type": "string",
+            "description": "Selected condition option ID"
+          },
+          "conditionResult": {
+            "type": "boolean",
+            "description": "Condition result"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "f02c7610-c0f3-49bc-9d2d-9761db4c93cd": {
+        "id": "f02c7610-c0f3-49bc-9d2d-9761db4c93cd",
+        "type": "response",
+        "name": "Partial Write",
+        "position": {
+          "x": 1800,
+          "y": 1760
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<verifyrevisionwrites.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "500"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "a69c61f6-653f-43d0-aab7-18e64d9ef046",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "eaa8127c-5c07-441a-b021-73b7d77cfe72": {
+        "id": "eaa8127c-5c07-441a-b021-73b7d77cfe72",
+        "type": "api",
+        "name": "Trigger Recheck CI",
+        "position": {
+          "x": 2230,
+          "y": 1760
+        },
+        "subBlocks": {
+          "url": {
+            "id": "url",
+            "type": "short-input",
+            "value": "{{GITEA_URL}}/api/v1/repos/<validateinput.result.owner>/<validateinput.result.repo>/actions/workflows/pipeline.yml/dispatches"
+          },
+          "body": {
+            "id": "body",
+            "type": "code",
+            "value": "{\"ref\":\"<validateinput.result.branch>\",\"inputs\":{\"pr_number\":\"<validateinput.result.pr_number>\",\"context_version\":\"<validateinput.result.context_version>\",\"repair_attempt\":\"<preparerevision.result.next_attempt>\",\"run_id\":\"<validateinput.result.run_id>\"}}"
+          },
+          "method": {
+            "id": "method",
+            "type": "dropdown",
+            "value": "POST"
+          },
+          "params": {
+            "id": "params",
+            "type": "table",
+            "value": [
+              {
+                "id": "a56d9eb6-d862-4fd4-8681-48e2011124b3",
+                "cells": {
+                  "Key": "return_run_details",
+                  "Value": "true"
+                }
+              }
+            ]
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "94124516-a771-40ba-85eb-b0323242c77d",
+                "cells": {
+                  "Key": "Authorization",
+                  "Value": "token {{GITEA_TOKEN}}"
+                }
+              },
+              {
+                "id": "3664db76-249c-4154-a07c-2439cb40ec70",
+                "cells": {
+                  "Key": "Accept",
+                  "Value": "application/json"
+                }
+              },
+              {
+                "id": "f9c1e45a-4016-40c5-a419-2cbe757ab247",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "retries": {
+            "id": "retries",
+            "type": "short-input",
+            "value": "0"
+          },
+          "timeout": {
+            "id": "timeout",
+            "type": "short-input",
+            "value": "30000"
+          },
+          "retryDelayMs": {
+            "id": "retryDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryMaxDelayMs": {
+            "id": "retryMaxDelayMs",
+            "type": "short-input",
+            "value": null
+          },
+          "retryNonIdempotent": {
+            "id": "retryNonIdempotent",
+            "type": "switch",
+            "value": false
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "API response data (JSON, text, or other formats)"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code (200, 404, 500, etc.)"
+          },
+          "headers": {
+            "type": "json",
+            "description": "HTTP response headers as key-value pairs"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": true,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "52cdc004-213f-4c85-9a2c-bd9080539c43": {
+        "id": "52cdc004-213f-4c85-9a2c-bd9080539c43",
+        "type": "function",
+        "name": "Check Recheck CI Dispatch",
+        "position": {
+          "x": 2660,
+          "y": 1760
+        },
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const status = Number(<triggerrecheckci.status>);\nconst data = <triggerrecheckci.data>;\nif (![200, 204].includes(status)) {\n  throw new Error(`Повторный CI не поставлен в очередь: HTTP ${status}`);\n}\nconst runId = status === 200\n  ? Number(data?.id ?? data?.workflow_run_id ?? 0)\n  : 0;\nif (status === 200 && (!Number.isInteger(runId) || runId < 1)) {\n  throw new Error('Gitea вернула HTTP 200 без идентификатора повторного CI run');\n}\nreturn {\n  valid: true,\n  status,\n  workflow_run_id: runId || null,\n  run_url: String(data?.html_url ?? data?.run_url ?? '')\n};"
+          },
+          "language": {
+            "id": "language",
+            "type": "dropdown",
+            "value": "javascript"
+          }
+        },
+        "outputs": {
+          "result": {
+            "type": "json",
+            "description": "Function result"
+          },
+          "stdout": {
+            "type": "string",
+            "description": "Function stdout"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      },
+      "74cccaa4-5259-48f0-871a-7170a22a457e": {
+        "id": "74cccaa4-5259-48f0-871a-7170a22a457e",
+        "type": "response",
+        "name": "Repair Completed",
+        "position": {
+          "x": 3090,
+          "y": 1760
+        },
+        "subBlocks": {
+          "data": {
+            "id": "data",
+            "type": "code",
+            "value": "<verifyrevisionwrites.result>"
+          },
+          "status": {
+            "id": "status",
+            "type": "short-input",
+            "value": "200"
+          },
+          "headers": {
+            "id": "headers",
+            "type": "table",
+            "value": [
+              {
+                "id": "a87c0576-0471-4934-89cf-f2d0779e4382",
+                "cells": {
+                  "Key": "Content-Type",
+                  "Value": "application/json"
+                }
+              }
+            ]
+          },
+          "dataMode": {
+            "id": "dataMode",
+            "type": "dropdown",
+            "value": "json"
+          },
+          "builderData": {
+            "id": "builderData",
+            "type": "response-format",
+            "value": []
+          }
+        },
+        "outputs": {
+          "data": {
+            "type": "json",
+            "description": "Response data"
+          },
+          "status": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "headers": {
+            "type": "json",
+            "description": "Response headers"
+          }
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "height": 0,
+        "advancedMode": false,
+        "triggerMode": false,
+        "data": {},
+        "locked": false
+      }
+    },
+    "edges": [
+      {
+        "id": "cfdd37b0-cc99-4f1b-83d9-2ab95de78870",
+        "source": "a77f6bef-1b50-4a03-8825-f22ec1f33fde",
+        "target": "1036065b-25ca-4df2-a209-dc9683539011",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "47deef1c-aafa-43a5-a2e5-be37773cd167",
+        "source": "1036065b-25ca-4df2-a209-dc9683539011",
+        "target": "e2aceb3d-c28b-453e-8a3f-69d08b05d413",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "45df1c20-10ee-4d1e-911f-08bbfe604cb7",
+        "source": "e2aceb3d-c28b-453e-8a3f-69d08b05d413",
+        "target": "4bc4a618-301a-4749-b33b-ec186a255258",
+        "sourceHandle": "condition-e2aceb3d-c28b-453e-8a3f-69d08b05d413-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "48b04f9e-b2c2-4d3d-9360-d875f46e3c59",
+        "source": "e2aceb3d-c28b-453e-8a3f-69d08b05d413",
+        "target": "2d5f5bb5-d7d3-40ee-8091-30a7c4987eb0",
+        "sourceHandle": "condition-e2aceb3d-c28b-453e-8a3f-69d08b05d413-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "8faa3f71-d471-4341-94d6-942cc3ca04f9",
+        "source": "4bc4a618-301a-4749-b33b-ec186a255258",
+        "target": "936c65b2-a479-4f10-9d2a-35f2359b5a86",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "e1181fa7-a864-4abd-beff-2dfa8a14270d",
+        "source": "936c65b2-a479-4f10-9d2a-35f2359b5a86",
+        "target": "0e8caad4-eab7-48c1-851c-89c323a07daf",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "b9d12687-5727-43d2-947e-108a863f809c",
+        "source": "0e8caad4-eab7-48c1-851c-89c323a07daf",
+        "target": "302b4d14-61a9-4c7c-8294-07929e02e6f0",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "3223457f-022d-4692-a63b-8c325b4646e8",
+        "source": "302b4d14-61a9-4c7c-8294-07929e02e6f0",
+        "target": "00d6e1a6-882f-450a-bd1d-b71fd3301c0d",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "4cc244e0-ad2e-48ff-b984-190bf4ee0bf7",
+        "source": "00d6e1a6-882f-450a-bd1d-b71fd3301c0d",
+        "target": "4ec95912-f51f-4f54-8232-dbad263b425f",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "f708886d-0203-4c14-9786-488f6b412e66",
+        "source": "4ec95912-f51f-4f54-8232-dbad263b425f",
+        "target": "c3c10a02-d8d1-49cc-8b66-7294cd11a556",
+        "sourceHandle": "condition-4ec95912-f51f-4f54-8232-dbad263b425f-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "a5c86e9f-e40e-4b3c-bb1a-ceaab8d4cf1d",
+        "source": "4ec95912-f51f-4f54-8232-dbad263b425f",
+        "target": "710f087a-ff2f-4a77-b7b2-bd933b55ab07",
+        "sourceHandle": "condition-4ec95912-f51f-4f54-8232-dbad263b425f-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7c4fb656-b419-4bb7-bf7c-8df8c204686c",
+        "source": "c3c10a02-d8d1-49cc-8b66-7294cd11a556",
+        "target": "e8a8faff-407b-4450-9683-53fc9e642ab3",
+        "sourceHandle": "condition-c3c10a02-d8d1-49cc-8b66-7294cd11a556-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "e96bf772-bf02-48d1-b05e-4cddf33715cf",
+        "source": "c3c10a02-d8d1-49cc-8b66-7294cd11a556",
+        "target": "cd432c75-578c-4e0e-aab0-dc76b67ca0eb",
+        "sourceHandle": "condition-c3c10a02-d8d1-49cc-8b66-7294cd11a556-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ba10f125-0c30-4efc-afe3-0ee034d82b9f",
+        "source": "cd432c75-578c-4e0e-aab0-dc76b67ca0eb",
+        "target": "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ee44c98d-bce9-4b75-bd15-487847f5015d",
+        "source": "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d",
+        "target": "7242751c-6034-459d-99ef-fc13f7821475",
+        "sourceHandle": "condition-a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6471485d-f898-44f3-b16d-4f3dd7724536",
+        "source": "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d",
+        "target": "053f3282-3898-4fa5-a58a-0b2fe37cdd5d",
+        "sourceHandle": "condition-a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-else-if-1",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "499071ad-aa40-462c-9ccc-9d20ca73ddf6",
+        "source": "a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d",
+        "target": "24a178e5-0be6-4e0f-b27b-b14808a18df4",
+        "sourceHandle": "condition-a39436a5-5d66-4621-ba9b-7dc3dcfd6d5d-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "cb5bc644-ef75-4ec8-8f93-12b2ce11cf3d",
+        "source": "053f3282-3898-4fa5-a58a-0b2fe37cdd5d",
+        "target": "d516842c-e936-4c1a-a0ce-40b21b012ff2",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "4b69e8e9-6733-4b3e-984d-8cae55300f61",
+        "source": "d516842c-e936-4c1a-a0ce-40b21b012ff2",
+        "target": "457c697e-5934-4f68-baf2-76c2160225c0",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "bb0aee3c-2050-4e41-9780-e91931bebeb8",
+        "source": "7242751c-6034-459d-99ef-fc13f7821475",
+        "target": "934255d9-8b96-4404-b310-457196ef475b",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "5d60fe86-7a88-4c36-9ec7-41814088b8c0",
+        "source": "934255d9-8b96-4404-b310-457196ef475b",
+        "target": "a5701475-e729-4a00-bc22-3534085dd887",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "dc36674a-beab-45ab-8952-64f39a9bc260",
+        "source": "a5701475-e729-4a00-bc22-3534085dd887",
+        "target": "fbd81cb2-bbbf-4a30-86a2-fad61986215b",
+        "sourceHandle": "condition-a5701475-e729-4a00-bc22-3534085dd887-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "36d2871f-5961-4ba2-9830-7389b34e0f3b",
+        "source": "a5701475-e729-4a00-bc22-3534085dd887",
+        "target": "488360d8-c4c8-41ce-8a75-e776f3501966",
+        "sourceHandle": "condition-a5701475-e729-4a00-bc22-3534085dd887-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "9833e5ae-6439-4fb9-b9ef-2a2082c33212",
+        "source": "fbd81cb2-bbbf-4a30-86a2-fad61986215b",
+        "target": "641365c4-9c22-40d7-8cbb-70237d204af8",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2babdab9-e57a-4d84-b571-a87d33cffd1c",
+        "source": "641365c4-9c22-40d7-8cbb-70237d204af8",
+        "target": "6df6ccde-6065-4178-8a7f-332342869c4d",
+        "sourceHandle": "condition-641365c4-9c22-40d7-8cbb-70237d204af8-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "694ff82a-5775-40d5-9cda-9aecf31606a1",
+        "source": "641365c4-9c22-40d7-8cbb-70237d204af8",
+        "target": "df186222-92f3-4b5c-a2f2-e0bab568a779",
+        "sourceHandle": "condition-641365c4-9c22-40d7-8cbb-70237d204af8-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "23f672f8-1960-4247-8d81-e559d40395f9",
+        "source": "6df6ccde-6065-4178-8a7f-332342869c4d",
+        "target": "7210ade5-ac5b-4133-b053-ed8c1339a7e3",
+        "sourceHandle": "loop-end-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "664a4922-3ff1-4999-b599-c72cf4241127",
+        "source": "7210ade5-ac5b-4133-b053-ed8c1339a7e3",
+        "target": "7ddba43d-d1a7-492a-bec8-75c5c9c56286",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ec8923a7-a65e-4fd8-9993-251a7310fbdb",
+        "source": "7ddba43d-d1a7-492a-bec8-75c5c9c56286",
+        "target": "1a14ebbd-6222-4450-8057-8f0410dc37d7",
+        "sourceHandle": "condition-7ddba43d-d1a7-492a-bec8-75c5c9c56286-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "cd28d074-1ddf-446e-ae5c-0b8fea12e6c9",
+        "source": "7ddba43d-d1a7-492a-bec8-75c5c9c56286",
+        "target": "c2201b85-511d-4c23-b45d-27e11aa72dd6",
+        "sourceHandle": "condition-7ddba43d-d1a7-492a-bec8-75c5c9c56286-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "449df536-b31f-4883-aaac-5628875b7668",
+        "source": "1a14ebbd-6222-4450-8057-8f0410dc37d7",
+        "target": "44dce98f-4af3-4241-9596-565119302483",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "b0f7591c-83f9-4abf-8eac-7c6e71a951fc",
+        "source": "44dce98f-4af3-4241-9596-565119302483",
+        "target": "2a4fe5f2-e310-4e01-b3c5-9379e327f627",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "c1fc6ce7-c445-4a91-8f3e-f78f45e204d4",
+        "source": "2a4fe5f2-e310-4e01-b3c5-9379e327f627",
+        "target": "a2e1309e-8e75-4b70-a66b-4ff594199c53",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2f38a6c2-70fb-41fc-b097-733f5075fcc7",
+        "source": "a2e1309e-8e75-4b70-a66b-4ff594199c53",
+        "target": "9dc819dd-53e9-4924-9b08-c191f7fa4c40",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "4461edff-bb5e-40a7-a5ee-3399af34985d",
+        "source": "9dc819dd-53e9-4924-9b08-c191f7fa4c40",
+        "target": "63cea214-2e41-4277-9245-50e66465132d",
+        "sourceHandle": "condition-9dc819dd-53e9-4924-9b08-c191f7fa4c40-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "fc46fc49-3242-4a70-9fbb-b4265cb0a18e",
+        "source": "9dc819dd-53e9-4924-9b08-c191f7fa4c40",
+        "target": "2adb7587-3104-4a98-b1b8-b70acc03dc0d",
+        "sourceHandle": "condition-9dc819dd-53e9-4924-9b08-c191f7fa4c40-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "b256a48c-6d68-4dce-8dd9-5b3545ae587a",
+        "source": "63cea214-2e41-4277-9245-50e66465132d",
+        "target": "20cf4652-2f57-49cc-9ff7-a4897769c0e6",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "8283ac5f-8f0d-4781-87d0-106b39a3dd96",
+        "source": "20cf4652-2f57-49cc-9ff7-a4897769c0e6",
+        "target": "fed10f51-6034-4c34-9189-a0a2d28c51a8",
+        "sourceHandle": "condition-20cf4652-2f57-49cc-9ff7-a4897769c0e6-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "dd7b61e4-2437-4751-9bd4-0bcd7065c520",
+        "source": "20cf4652-2f57-49cc-9ff7-a4897769c0e6",
+        "target": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+        "sourceHandle": "condition-20cf4652-2f57-49cc-9ff7-a4897769c0e6-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "e20f1a75-0cce-4c8b-8cdd-0c009d5ba5b4",
+        "source": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+        "target": "e96c4aa2-c54f-4c43-ba3f-ace5895ffbbe",
+        "sourceHandle": "loop-end-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ac233130-2bd9-4c31-9267-c7960f02f482",
+        "source": "e96c4aa2-c54f-4c43-ba3f-ace5895ffbbe",
+        "target": "cbb7d8e7-0e03-41d0-8386-74187d770cce",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "031af3ba-c5ba-4913-b27e-5602ab52614e",
+        "source": "cbb7d8e7-0e03-41d0-8386-74187d770cce",
+        "target": "eaa8127c-5c07-441a-b021-73b7d77cfe72",
+        "sourceHandle": "condition-cbb7d8e7-0e03-41d0-8386-74187d770cce-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "4c12f472-9afe-4b1a-bf7d-de57eac6f9df",
+        "source": "cbb7d8e7-0e03-41d0-8386-74187d770cce",
+        "target": "f02c7610-c0f3-49bc-9d2d-9761db4c93cd",
+        "sourceHandle": "condition-cbb7d8e7-0e03-41d0-8386-74187d770cce-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "5cbe7a3b-410f-47ea-b08b-b9092743618f",
+        "source": "eaa8127c-5c07-441a-b021-73b7d77cfe72",
+        "target": "52cdc004-213f-4c85-9a2c-bd9080539c43",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "b659857f-4740-45b2-8549-7546eb40a8fa",
+        "source": "52cdc004-213f-4c85-9a2c-bd9080539c43",
+        "target": "74cccaa4-5259-48f0-871a-7170a22a457e",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2aa4bd46-a842-4ab8-9588-5a1ee256f773",
+        "source": "6df6ccde-6065-4178-8a7f-332342869c4d",
+        "target": "46db0599-bce4-4f5e-9d96-5fa809fc28d6",
+        "sourceHandle": "loop-start-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "c1422a4f-5f27-4c57-8ec3-bc132cfea783",
+        "source": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+        "target": "d05f5e17-6713-4027-b574-1daa7a352d46",
+        "sourceHandle": "loop-start-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {
+      "6df6ccde-6065-4178-8a7f-332342869c4d": {
+        "id": "6df6ccde-6065-4178-8a7f-332342869c4d",
+        "nodes": [
+          "46db0599-bce4-4f5e-9d96-5fa809fc28d6"
+        ],
+        "iterations": 10,
+        "loopType": "forEach",
+        "enabled": true,
+        "forEachItems": "<selectrevisionpaths.result.paths>",
+        "whileCondition": "",
+        "doWhileCondition": ""
+      },
+      "3714b6d1-7be0-4850-b2b8-5439f610f538": {
+        "id": "3714b6d1-7be0-4850-b2b8-5439f610f538",
+        "nodes": [
+          "d05f5e17-6713-4027-b574-1daa7a352d46"
+        ],
+        "iterations": 5,
+        "loopType": "forEach",
+        "enabled": true,
+        "forEachItems": "<preparerevision.result.update_files>",
+        "whileCondition": "",
+        "doWhileCondition": ""
+      }
+    },
+    "parallels": {},
+    "metadata": {
+      "name": "04 — CI-анализ и автоисправление [demo simple]",
+      "description": "CI-анализ, контекст репозитория и до пяти последовательных repair-попыток; pytest exit code 5 принудительно исправляет тесты, а retry без изменений разрешён только для временного инфраструктурного сбоя.",
+      "variant": "fastapi-demo-simple-v1",
+      "profile_id": "python-fastapi-3.12",
+      "target_repository": "labadmin/demo-fastapi",
+      "model": "qwen3-coder-next:latest",
+      "thinking": "none"
+    },
+    "variables": {}
+  }
+}

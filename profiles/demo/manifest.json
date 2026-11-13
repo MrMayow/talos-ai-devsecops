@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "bundle": "fastapi-demo-simple-v1",
+  "bundle_revision": "1.9.1",
+  "sim_graph_fixes": [
+    "condition source handles use the condition- prefix",
+    "loop children use the regenerated parentId and parent extent",
+    "mutually exclusive PR branches do not read skipped block outputs",
+    "open pull requests are matched locally by exact head and base refs",
+    "Workflow 04 accepts and executes repair attempts 1 through 5",
+    "Workflow 04 reads pytest.log before deciding between repair and manual handling",
+    "repair attempts advance once per failed CI cycle without skipping even numbers",
+    "Workflow 04 reads related approved Python files and retries ambiguous failures autonomously",
+    "Workflow 04 treats pytest exit code 5 and no-tests-collected as a deterministic test repair",
+    "Workflow 04 retries the same commit only for identified transient infrastructure failures",
+    "Workflow 04 rejects revisions that remove existing pytest test functions",
+    "Workflow 04 runs a mandatory safeguard model pass with deterministic draft validation feedback",
+    "Gitea run names and logs expose the AI repair counter separately from the Actions run-attempt counter",
+    "Workflow 01 records three mandatory documentation deliverables",
+    "Workflow 02 requires every documentation file in the approved repository plan",
+    "Workflow 02 and Workflow 03 do not impose a semantic file-count limit",
+    "Workflow 03 delegates application code, tests, and documentation to separate bounded model calls",
+    "Workflow 03 rejects incomplete or placeholder documentation",
+    "Workflow 03 permits empty Python __init__.py package markers",
+    "Workflow 03 performs one bounded pre-write generation repair pass"
+  ],
+  "generated_at": "2026-08-05T20:07:47.768183Z",
+  "model": "qwen3-coder-next:latest",
+  "thinking": "none",
+  "target_repository": "labadmin/demo-fastapi",
+  "workflows": [
+    "workflows/01-requirements-demo-simple.json",
+    "workflows/02-architecture-demo-simple.json",
+    "workflows/03-implementation-demo-simple.json",
+    "workflows/04-ci-repair-demo-simple.json"
+  ],
+  "block_counts": {
+    "01": 19,
+    "02": 20,
+    "03": 45,
+    "04": 48
+  },
+  "automatic_ci_repairs": 5,
+  "required_project_documentation": [
+    "docs/USER_GUIDE.md",
+    "docs/ADMIN_GUIDE.md",
+    "docs/TECHNICAL_GUIDE.md"
+  ],
+  "required_sim_environment": [
+    "GITEA_URL",
+    "GITEA_TOKEN",
+    "SIM_INTERNAL_URL",
+    "SIM_WORKFLOW02_ID",
+    "SIM_WORKFLOW03_ID",
+    "SIM_WORKFLOW_API_KEY"
+  ],
+  "gitea_platform": "../../platform",
+  "manual_merge_required": true
+}
